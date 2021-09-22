@@ -18,16 +18,24 @@ const firebaseConfig = {
     appId: "1:436800369751:web:3a10ccd660d726757b1f12"
   };
 
-  // add a comment
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Connects Javascript code to firebase discord app
+/* Reading from a database */
+// This reads data from database real-time
 // Any real-time change to firebase discord app should pop up Javascript alert
-// Right now it should be very basic same as last Monday's class
 let db = rtdb.getDatabase(app);
 let titleRef = rtdb.ref(db, "/");
 rtdb.onValue(titleRef, ss=>{
   alert(JSON.stringify(ss.val()));
+});
+
+/* Writing data to a database */
+document.getElementById("submit-btn").addEventListener("click", function(){
+  let credentialRef = rtdb.child(titleRef, "credentials");
+  let credentialObj = {
+    "login-id" : document.getElementById("user-id").value,
+    "password" : document.getElementById("user-password").value
+  }
+  rtdb.push(credentialRef, credentialObj);
 });

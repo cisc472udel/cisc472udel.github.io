@@ -31,10 +31,11 @@ rtdb.onValue(titleRef, ss=>{
 });
 
 /* Writing data to a database */
-document.getElementById("submit-btn").addEventListener("click", function(){
+document.getElementById("signup-btn").addEventListener("click", function(){
   let credentialRef = rtdb.child(titleRef, "credentials");
   let credentialObj = {
-    "login-id" : document.getElementById("user-id").value,
+    "email" : document.getElementById("user-email").value,
+    "username" : document.getElementById("user-username").value,
     "password" : document.getElementById("user-password").value
   }
   rtdb.push(credentialRef, credentialObj);

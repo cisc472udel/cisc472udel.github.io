@@ -30,13 +30,4 @@ rtdb.onValue(titleRef, ss=>{
   alert(JSON.stringify(ss.val()));
 });
 
-/* Writing data to a database */
-document.getElementById("signup-btn").addEventListener("click", function(){
-  let credentialRef = rtdb.child(titleRef, "credentials");
-  let credentialObj = {
-    "email" : document.getElementById("user-email").value,
-    "username" : document.getElementById("user-username").value,
-    "password" : document.getElementById("user-password").value
-  }
-  rtdb.push(credentialRef, credentialObj);
-});
+export {rtdb, titleRef};

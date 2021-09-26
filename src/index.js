@@ -21,13 +21,16 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-/* Reading from a database */
-// This reads data from database real-time
-// Any real-time change to firebase discord app should pop up Javascript alert
+/* Connects Javascript code to Firebase database */
 let db = rtdb.getDatabase(app);
 let titleRef = rtdb.ref(db, "/");
-rtdb.onValue(titleRef, ss=>{
+let credentialRef = rtdb.child(titleRef, "credentials");
+
+/* Reads data from database and alerts user upon modifying database */
+rtdb.onValue(credentialRef, ss=>{
   alert(JSON.stringify(ss.val()));
 });
 
-export {rtdb, titleRef};
+const credentialKeys = []; // Helps us so that users don't sign up with the same email account
+
+export {rtdb, credentialKeys, credentialRef};

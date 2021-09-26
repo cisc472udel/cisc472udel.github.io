@@ -28,8 +28,8 @@ document.getElementById("signup-form").onsubmit = function(){
             return false;
         }
         else{
-            if(!key.endsWith(".org") && !key.endsWith(".com") && !key.endsWith(".edu") ){
-                document.getElementById("emailChecker").innerText = "Invalid email extension(use .org, .edu, or .com)";
+            if(!key.endsWith(".org") && !key.endsWith(".com") && !key.endsWith(".edu") && !key.endsWith(".in") && !key.endsWith(".co.in") ){
+                document.getElementById("emailChecker").innerText = "Invalid email extension(use .org, .edu, .in, .co.in or .com)";
                 document.getElementById("emailChecker").style = "color: red"; 
                 return false;
             }
@@ -41,8 +41,8 @@ document.getElementById("signup-form").onsubmit = function(){
         }
     }
     else{
-        if(!key.endsWith(".org") && !key.endsWith(".com") && !key.endsWith(".edu") ){
-            document.getElementById("emailChecker").innerText = "Invalid email extension(use .org, .edu, or .com)";
+        if(!key.endsWith(".org") && !key.endsWith(".com") && !key.endsWith(".edu") && !key.endsWith(".in") && !key.endsWith(".co.in") ){
+            document.getElementById("emailChecker").innerText = "Invalid email extension(use .org, .edu, .in, .co.in or .com)";
             document.getElementById("emailChecker").style = "color: red"; 
             return false;
         }

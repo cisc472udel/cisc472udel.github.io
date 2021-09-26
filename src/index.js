@@ -1,8 +1,9 @@
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js";
-
 import * as rtdb from "https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js";
+import * as fbauth from "https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js";
+
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -23,14 +24,7 @@ const app = initializeApp(firebaseConfig);
 
 /* Connects Javascript code to Firebase database */
 let db = rtdb.getDatabase(app);
+let auth = fbauth.getAuth(app);
 let titleRef = rtdb.ref(db, "/");
-let credentialRef = rtdb.child(titleRef, "credentials");
 
-/* Reads data from database and alerts user upon modifying database */
-rtdb.onValue(credentialRef, ss=>{
-  alert(JSON.stringify(ss.val()));
-});
-
-const credentialKeys = []; // Helps us so that users don't sign up with the same email account
-
-export {rtdb, credentialKeys, credentialRef};
+export {auth, fbauth};

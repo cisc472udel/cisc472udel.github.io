@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
  <head>
-  <title> Sign Up </title>
+  <title> DIY Discord </title>
+  <script type="module" src="src/firebase-connection.js"> </script>
   <script type="module" src="src/index.js"> </script>
-  <script type="module" src="src/signup.js"> </script>
 
  </head>
 
  <body>
-  <div style="text-align: center">
+  <div style="text-align: center; display: block" id="signup">
    <h1> Create An Account </h1>
    <br>
    <form id="signup-form">
@@ -20,9 +20,29 @@
     <input type="password" id="user-password" required><br> <br>
   
     <input type="button" value="Sign Up" id="signup-btn">
+    <p id="signupChecker"> </p>
     <br><br>
-    <a id="login-link" href="html/login.html"> Already have an account? </a>
+    <a id="login-link" href="#login"> Already have an account? </a>
    </form> 
+  </div>
+  <div style="display: none" id="login">
+   <h1> Welcome Back!!! </h1>
+   <h4> We're so excited to see you again!!</h4>
+   <br>
+   <form id="signin-form">
+    <label> Email </label><br>
+    <input type="email" id="signin-email" required autofocus> <br> <br>
+    <label> Password </label><br>
+    <input type="password" id="signin-password" required><br> <br>
+    <input type="button" value="Login" id="login-btn">
+    <br><br>
+    <a id="signup-link" href="#signup"> Need to register? </a>
+   </form>
+  </div>
+
+  <div style="display: none" id="main_page">
+    <h1 align="center"> You are now in the main page of Discord </h1>
+    <p  style="text-align: center"> All the key features of Discord would come here... </p>  
   </div>
  </body>
 </html>

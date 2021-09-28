@@ -1,30 +1,69 @@
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js";
-import * as rtdb from "https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js";
-import * as fbauth from "https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js";
+import {auth, fbauth } from './firebase-connection.js';
 
+window.onload = function(){
+    window.addEventListener("o")
+}
+let signUpForm = true;
+let handleHash = function(){
+    if(signUpForm == true){
+        signUpForm = false;
+        document.getElementById("login").style = "display: block; text-align: center";
+        document.getElementById("signup").style = "display: none";
+    }
+    else{
+        signUpForm = true;
+        document.getElementById("signup").style = "display: block; text-align: center";
+        document.getElementById("login").style = "display: none";
+    }
+    document.getElementById("main_page").style = "display: none";
+};
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+document.getElementById("login-link").onclick = function(){
+    document.getElementById("signupChecker").innerText = "";
+    document.getElementById("user-email").value = "";
+    document.getElementById("user-username").value = "";
+    document.getElementById("user-password").value = "";
+    window.addEventListener("hashchange", handleHash);
+    window.addEventListener("load", handleHash);
+};
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyDv5qUNSsXsilVUTuEKyg2p4_i9mxc1Lj4",
-    authDomain: "discordserver-95266.firebaseapp.com",
-    databaseURL: "https://discordserver-95266-default-rtdb.firebaseio.com",
-    projectId: "discordserver-95266",
-    storageBucket: "discordserver-95266.appspot.com",
-    messagingSenderId: "436800369751",
-    appId: "1:436800369751:web:3a10ccd660d726757b1f12"
-  };
+document.getElementById("signup-link").onclick = function(){
+    document.getElementById("signin-email").value = "";
+    document.getElementById("signin-password").value = "";
+    window.addEventListener("hashchange", handleHash);
+    window.addEventListener("load", handleHash);
+};
+/* Action to be performed when user clicks "Sign Up" button */
+document.getElementById("signup-btn").onclick = function(e){
+    let email = document.getElementById("user-email").value;
+    let password = document.getElementById("user-password").value;
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+    fbauth.createUserWithEmailAndPassword(auth, email, password).then(()=>{
+        document.getElementById("signupChecker").innerText = "SIGNUP SUCCESSFUL!!!";
+    }).catch(e=>{
+        document.getElementById("signupChecker").innerText = "";
+        alert(e.code);
+    });
+};
 
-/* Connects Javascript code to Firebase database */
-let db = rtdb.getDatabase(app);
-let auth = fbauth.getAuth(app);
-let titleRef = rtdb.ref(db, "/");
+/* Action to be performed when user clicks "Login" button */
+document.getElementById("login-btn").onclick = function(){
+    let email = document.getElementById("signin-email").value;
+    let password = document.getElementById("signin-password").value;
 
-export {auth, fbauth};
+    fbauth.signInWithEmailAndPassword(auth, email, password).then(()=>{
+        location.href = "#main_page";
+        window.addEventListener("hashchange", mainPageHash);
+        window.addEventListener("load", mainPageHash);
+    }).catch(e=>{
+        alert(e.code);
+    })
+    
+};
+
+let mainPageHash = function() {
+    document.getElementById("signup").style = "display: none";
+    document.getElementById("login").style = "display: none";
+    document.getElementById("main_page").style = "display: block";
+}

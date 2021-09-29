@@ -1,21 +1,43 @@
 import {auth, fbauth, chatRef, rtdb} from './firebase-connection.js';
 
 let signUpForm = true; // Flag to check whether or not we are in Sign Up page
+let loginForm = false;
+let passwordResetPage = false;
 let handleHash = function(){
     if(signUpForm == true){
-        signUpForm = false;
-        document.getElementById("login").style = "display: block; text-align: center";
-        document.getElementById("signup").style = "display: none";
-    }
-    else{
-        signUpForm = true;
-        document.getElementById("signup").style = "display: block; text-align: center";
         document.getElementById("login").style = "display: none";
+        document.getElementById("signup").style = "display: block; text-align: center";
+        document.getElementById("main_page").style = "display: none";
+        document.getElementById("password-reset").style = "display: none";
     }
-    document.getElementById("main_page").style = "display: none";
+    if(loginForm == true){
+        document.getElementById("signup").style = "display: none";
+        document.getElementById("login").style = "display: block; text-align: center";
+        document.getElementById("main_page").style = "display: none";
+        document.getElementById("password-reset").style = "display: none";
+    }
+    if(passwordResetPage == true){
+        let email = document.getElementById("signin-email").value;
+
+        document.getElementById("signup").style = "display: none";
+        document.getElementById("login").style = "display: none";
+        document.getElementById("main_page").style = "display: none";
+        document.getElementById("password-reset").style = "display: block; text-align: center";
+
+        fbauth.sendPasswordResetEmail(auth, email).then(() => {
+            // Password reset email sent!
+        }).catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            alert(errorCode);
+        });
+    }
 };
 
 document.getElementById("login-link").onclick = function(){
+    loginForm = true;
+    signUpForm = false;
+    passwordResetPage = false;
     document.getElementById("signupChecker").innerText = "";
     document.getElementById("user-email").value = "";
     document.getElementById("user-username").value = "";
@@ -24,7 +46,20 @@ document.getElementById("login-link").onclick = function(){
     window.addEventListener("load", handleHash);
 };
 
+document.getElementById("password-reset-login-link").onclick = function() {
+    loginForm = true;
+    signUpForm = false;
+    passwordResetPage = false;
+    window.addEventListener("hashchange", handleHash);
+    window.addEventListener("load", handleHash);
+    document.getElementById("signin-email").value = "";
+    document.getElementById("signin-password").value = "";
+};
+
 document.getElementById("signup-link").onclick = function(){
+    loginForm = false;
+    signUpForm = true;
+    passwordResetPage = false;
     document.getElementById("signin-email").value = "";
     document.getElementById("signin-password").value = "";
     window.addEventListener("hashchange", handleHash);
@@ -58,9 +93,18 @@ document.getElementById("login-btn").onclick = function(){
     
 };
 
+document.getElementById("password-reset-link").onclick = function(){
+    passwordResetPage = true;
+    signUpForm = false;
+    loginForm = false;
+    window.addEventListener("hashchange", handleHash);
+    window.addEventListener("load", handleHash);
+};
+
 let mainPageHash = function() {
     document.getElementById("signup").style = "display: none";
     document.getElementById("login").style = "display: none";
+    document.getElementById("password-reset").style = "display: none";
     document.getElementById("main_page").style = "display: block";
 }
 

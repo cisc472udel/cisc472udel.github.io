@@ -26,5 +26,6 @@ const app = initializeApp(firebaseConfig);
 let db = rtdb.getDatabase(app);
 let auth = fbauth.getAuth(app);
 let titleRef = rtdb.ref(db, "/");
+let chatRef = rtdb.child(titleRef, "chats");
 
-export {auth, fbauth};
+export {auth, fbauth, chatRef, rtdb};

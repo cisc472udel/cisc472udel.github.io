@@ -1,10 +1,6 @@
+import {auth, fbauth, chatRef, rtdb} from './firebase-connection.js';
 
-import {auth, fbauth } from './firebase-connection.js';
-
-window.onload = function(){
-    window.addEventListener("o")
-}
-let signUpForm = true;
+let signUpForm = true; // Flag to check whether or not we are in Sign Up page
 let handleHash = function(){
     if(signUpForm == true){
         signUpForm = false;
@@ -66,4 +62,20 @@ let mainPageHash = function() {
     document.getElementById("signup").style = "display: none";
     document.getElementById("login").style = "display: none";
     document.getElementById("main_page").style = "display: block";
+}
+
+document.getElementById("send-btn").onclick = function(){
+    let messageObj = {
+        "message" : document.getElementById("message-field").value
+    };
+    let messageKey = rtdb.push(chatRef, messageObj).key;
+
+    rtdb.onValue(chatRef, ss=>{
+        alert(JSON.stringify(ss.val()[messageKey].message));
+    });
+
+    let list = document.getElementById("bulleted-message");
+    let listItem = document.createElement("li");
+    listItem.textContent = document.getElementById("message-field").value;
+    list.appendChild(listItem);
 }

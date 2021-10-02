@@ -1,8 +1,18 @@
 import {auth, fbauth, chatRef, rtdb} from './firebase-connection.js';
 
+let username;
+let messageID = 0; // message id to keep track of incoming messages in the database
 let signUpForm = true; // Flag to check whether or not we are in Sign Up page
-let loginForm = false;
-let passwordResetPage = false;
+let loginForm = false; // Flag to check whether or not we are in Login page
+let passwordResetPage = false; // Flag to check whether or not we are in Password Reset page
+
+// Check from database how many messages are stored to make our "messageID" more accurate
+rtdb.get(chatRef).then(ss=>{
+    ss.forEach(element => {
+        messageID = messageID + 1;
+    });
+});
+    
 let handleHash = function(){
     if(signUpForm == true){
         document.getElementById("login").style = "display: none";
@@ -72,6 +82,7 @@ document.getElementById("signup-btn").onclick = function(e){
 
     fbauth.createUserWithEmailAndPassword(auth, email, password).then(()=>{
         document.getElementById("signupChecker").innerText = "SIGNUP SUCCESSFUL!!!";
+        username = document.getElementById("user-username").value;
     }).catch(e=>{
         document.getElementById("signupChecker").innerText = "";
         alert(e.code);
@@ -108,18 +119,60 @@ let mainPageHash = function() {
     document.getElementById("main_page").style = "display: block";
 }
 
+// Action to be performed when user clicks on "Send" button within Main Page of Discord
 document.getElementById("send-btn").onclick = function(){
-    let messageObj = {
-        "message" : document.getElementById("message-field").value
-    };
-    let messageKey = rtdb.push(chatRef, messageObj).key;
 
-    rtdb.onValue(chatRef, ss=>{
-        alert(JSON.stringify(ss.val()[messageKey].message));
+    messageID = messageID + 1;
+    let msgRef = rtdb.child(chatRef, String(messageID));
+
+    let messageIDObj = {
+        "id": messageID,
+        "username": String(username),
+        "message" : document.getElementById("message-field").value,
+        "edited": false
+    }
+
+    rtdb.update(msgRef, messageIDObj);
+
+    rtdb.onValue(msgRef, ss=>{
+        alert(JSON.stringify(ss.val()));
     });
 
-    let list = document.getElementById("bulleted-message");
-    let listItem = document.createElement("li");
-    listItem.textContent = document.getElementById("message-field").value;
-    list.appendChild(listItem);
+    let chats = document.getElementById("chats");
+    let message = document.createElement("div");
+    let editMessage = document.createElement("div");
+    let lineBreak = document.createElement("br");
+    
+    message.className = "msg";
+    message.innerHTML = messageIDObj.message;
+
+    let textBox = document.createElement("input");
+    textBox.type = "text";
+    textBox.id = "edit-field-id-" + String(messageIDObj.id);
+    textBox.placeholder = "Edit Your Message";
+
+    let sendBtn = document.createElement("input");
+    sendBtn.type = "button";
+    sendBtn.id = "send-edit-btn-id-" + String(messageIDObj.id);
+    sendBtn.value = "Send Your Edit";
+
+    editMessage.appendChild(textBox);
+    editMessage.appendChild(sendBtn);
+
+    editMessage.style = "display: none";
+    message.onclick = function(){
+
+        editMessage.style = "display: block";
+        document.getElementById("send-edit-btn-id-" + String(messageIDObj.id)).onclick = function(){
+            messageIDObj.edited = true;
+            message.innerHTML = document.getElementById("edit-field-id-" + String(messageIDObj.id)).value + " (Edited)";
+            messageIDObj.message = document.getElementById("edit-field-id-" + String(messageIDObj.id)).value; 
+            rtdb.update(msgRef, messageIDObj);
+
+            editMessage.style = "display: none";
+        }
+    };
+    chats.appendChild(message);
+    chats.appendChild(editMessage);
+    chats.appendChild(lineBreak);
 }

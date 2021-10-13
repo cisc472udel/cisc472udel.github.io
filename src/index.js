@@ -5,13 +5,6 @@ let messageID = 0; // message id to keep track of incoming messages in the datab
 let signUpForm = true; // Flag to check whether or not we are in Sign Up page
 let loginForm = false; // Flag to check whether or not we are in Login page
 let passwordResetPage = false; // Flag to check whether or not we are in Password Reset page
-
-// Check from database how many messages are stored to make our "messageID" more accurate
-rtdb.get(chatRef).then(ss=>{
-    ss.forEach(element => {
-        messageID = messageID + 1;
-    });
-});
     
 let handleHash = function(){
     if(signUpForm == true){
@@ -95,6 +88,14 @@ document.getElementById("login-btn").onclick = function(){
     let password = document.getElementById("signin-password").value;
 
     fbauth.signInWithEmailAndPassword(auth, email, password).then(()=>{
+        
+        // Check from database how many messages are stored to make our "messageID" more accurate
+        rtdb.get(chatRef).then(ss=>{
+            ss.forEach(element => {
+                messageID = messageID + 1;
+            });
+        });
+
         location.href = "#main_page";
         window.addEventListener("hashchange", mainPageHash);
         window.addEventListener("load", mainPageHash);
@@ -163,11 +164,14 @@ document.getElementById("send-btn").onclick = function(){
     message.onclick = function(){
 
         editMessage.style = "display: block";
-        document.getElementById("send-edit-btn-id-" + String(messageIDObj.id)).onclick = function(){
-            messageIDObj.edited = true;
-            message.innerHTML = document.getElementById("edit-field-id-" + String(messageIDObj.id)).value + " (Edited)";
-            messageIDObj.message = document.getElementById("edit-field-id-" + String(messageIDObj.id)).value; 
-            rtdb.update(msgRef, messageIDObj);
+        document.getElementById(sendBtn.id).onclick = function(){
+            let editedText = String(document.getElementById(textBox.id).value).trim();
+            if(editedText.length > 0){
+                messageIDObj.edited = true;
+                message.innerHTML = editedText + " (Edited)";
+                messageIDObj.message = editedText; 
+                rtdb.update(msgRef, messageIDObj);
+            }
 
             editMessage.style = "display: none";
         }

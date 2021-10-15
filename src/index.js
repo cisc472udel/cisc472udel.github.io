@@ -1,6 +1,8 @@
-import {auth, fbauth, chatRef, rtdb} from './firebase-connection.js';
+import {auth, fbauth, serverRef, rtdb} from './firebase-connection.js';
 
 let username;
+let user;
+let userUID;
 let messageID = 0; // message id to keep track of incoming messages in the database
 let signUpForm = false; // Flag to check whether or not we are in Sign Up page
 let loginForm = true; // Flag to check whether or not we are in Login page
@@ -88,21 +90,15 @@ document.getElementById("login-btn").onclick = function(){
     let password = document.getElementById("signin-password").value;
 
     fbauth.signInWithEmailAndPassword(auth, email, password).then(()=>{
-        
-        // Check from database how many messages are stored to make our "messageID" more accurate
-        rtdb.get(chatRef).then(ss=>{
-            ss.forEach(element => {
-                messageID = messageID + 1;
-            });
-        });
-
+        user = auth.currentUser;       
+        userUID = user.uid;
         location.href = "#main_page";
         window.addEventListener("hashchange", mainPageHash);
         window.addEventListener("load", mainPageHash);
     }).catch(e=>{
         alert(e.code);
     })
-    
+        
 };
 
 document.getElementById("password-reset-link").onclick = function(){
@@ -119,7 +115,7 @@ let mainPageHash = function() {
     document.getElementById("password-reset").style = "display: none";
     document.getElementById("main_page").style = "display: block";
 }
-
+/*
 // Action to be performed when user clicks on "Send" button within Main Page of Discord
 document.getElementById("send-btn").onclick = function(){
 
@@ -180,6 +176,7 @@ document.getElementById("send-btn").onclick = function(){
     chats.appendChild(editMessage);
     chats.appendChild(lineBreak);
 }
+*/
 
 document.getElementById("addserver-btn").onclick = function(){
     document.getElementById("create-server").style.display = "block";
@@ -199,5 +196,27 @@ document.getElementById("create-server-btn").onclick = function(){
 
     document.getElementById("create-server").style.display = "none";
     document.getElementById("server-name").value = "";
+
+    let nameRef = rtdb.child(serverRef, serverName);
+    let userObj = {
+        "admin": true,
+        "userID": userUID,
+        "username": String(username)
+    }
+
+    let serverObj = {
+        "chats": [],
+        "members": [
+            userObj
+        ],
+        "createdBy" : userObj,
+        "serverID" : userObj.userID
+    };
+
+    rtdb.update(nameRef, serverObj);
+
+    rtdb.onValue(serverRef, ss=>{
+        alert(JSON.stringify(ss.val()));
+    });
 
 }

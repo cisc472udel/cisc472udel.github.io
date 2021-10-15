@@ -3,74 +3,91 @@
  <head>
   <title> DIY Discord </title>
   <script type="module" src="src/firebase-connection.js"> </script>
-  <script type="module" src="src/index.js"> </script>
-  <link rel="stylesheet" href="style.css">
+  <script type='module' src='src/index.js'></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
  </head>
 
  <body>
-  <div style="text-align: center; display: block" id="signup">
-   <h1> Create An Account </h1>
-   <br>
-   <form id="signup-form">
-    <label> Email </label><br>
-    <input type="email" id="user-email" required autofocus placeholder="Email address"> <br> <br>
-    <label> Username </label><br> 
-    <input type="text" id="user-username" required placeholder="User Name"> <br> <br>
-    <label> Password </label><br>
-    <input type="password" id="user-password" required placeholder="Password"><br> <br>
-  
-    <input type="button" value="Sign Up" id="signup-btn">
-    <p id="signupChecker"> </p>
-    <br><br>
-    <a id="login-link" href="#login"> Already have an account? </a>
-   </form> 
-  </div>
-  <div style="display: none" id="login">
-   <h1> Welcome Back!!! </h1>
-   <h4> We're so excited to see you again!!</h4>
-   <br>
-   <form id="signin-form">
-    <label> Email </label><br>
-    <input type="email" id="signin-email" required autofocus placeholder="Email address"> <br> <br>
-    <label> Password </label><br>
-    <input type="password" id="signin-password" required placeholder="Password"><br> <br>
-    <input type="button" value="Login" id="login-btn">
-    <br><br>
-    <a id="password-reset-link" href="#password-reset"> Forgot your password? </a> <br><br>
-    <a id="signup-link" href="#signup"> Need to register? </a>
+  <div class="container">
+
+   <form class="form" style="display: block" id="login">
+    <h1 class="form-title">Login</h1>
+    <div class="form-input-group">
+     <input type="email" class="form-input" id="signin-email" autofocus placeholder="Email">
+     <div class="form-input-error"></div>
+    </div>
+    <div class="form-input-group">
+     <input type="password" class="form-input" id="signin-password" placeholder="Password">
+     <div class="form-input-error"></div>
+    </div>
+     <input type="button" class="form-button" id="login-btn" value="Login">
+     <p class="form-text">
+      <a class="form-link" id="password-reset-link" href="#password-reset"> Forgot your password? </a>
+     </p>
+     <p class="form-text">
+      <a class="form-link" id="signup-link" href="#register"> Need to register? </a>
+     </p>
    </form>
-  </div>
 
-  <div style="display:none" id="password-reset">
-    <h1> Password Reset Request for Discord </h1>
-    <p> We received your request for resetting your current password. Follow the instructions from email that we sent out to you to reset your password successfully </p> <br>
-    <a id="password-reset-login-link" href="#login"> Back to Login Page </a>
-  </div> 
+   <form class="form" style="display: none" id="signup">
+    <h1 class="form-title">Create Account</h1>
+    <div class="form-input-group">
+     <input type="email" class="form-input" id="user-email" autofocus placeholder="Email">
+     <div class="form-input-error"></div>
+    </div>
+    <div class="form-input-group">
+     <input type="text" class="form-input" id="user-username" autofocus placeholder="Username">
+     <div class="form-input-error"></div>
+    </div>
+    <div class="form-input-group">
+     <input type="password" class="form-input" id="user-password" placeholder="Password">
+     <div class="form-input-error"></div>
+    </div>
+     <input type="button" class="form-button" id="signup-btn" value="Sign Up">
+     <p id="signupChecker"></p>
+     <p class="form-text">
+      <a class="form-link" id="login-link" href="#login"> Already have an account? Sign in </a>
+     </p>
+   </form>
 
-  <div style="display: none" id="main_page">
-    <h1 align="center"> You are now in the main page of Discord </h1>
-    <p style="text-align: center"> All the key features of Discord would come here... </p> 
-   <div class="wrapper" id = "main_page">
-          <div class="sidebar">
-            <h1>Servers</h1>
-            <div class="servers">
-            <button type="button">Add Server</button>
-              <button type="button">Delete Server</button>
-            </div>
-            <ul id="serverlist">
-            </ul>
-          </div>
+   <form class="form" style="display: none" id="password-reset">
+    <h1> Password Reset Request for DaveCord </h1>
+    <p> We recieved your request for resetting your current password. Follow the instructions from the email we sent you to reset your password
+     <p class="form-text">
+      <a class="form-link" id="password-reset-login-link" href="#login"> Back to Login Page </a>
+     </p>
+   </form>
+
+   <form class="form" style="display: none" id="main_page">
+    <div class="wrapper" id="wrapper-sidebar">
+     <div class="sidebar">
+      <h1>Servers</h1>
+      <div class="servers">
+       <input type="button" value="Add Server" id="addserver-btn">
+       <br><br>
+       <div id="serverlist">
+       </div>
+      </div>
+     </div>
     </div>
-    <div style="text-align: center" id="chats">
-    </div>  
-    <br><br><br><br><br><br><br><br><br><br>
-    <div style="text-align: center">
-      <form> 
-        <input type="text" id="message-field">
-        <input type = "button" id="send-btn" value="Send">
-      </form>
+   </form>
+
+   <form class="form" style="display: none" id="create-server">
+    <h1 class="form-title">Create A Server</h1>
+    <div class="server-input-group">
+     <input type="text" class="form-input" id="server-name" required autofocus placeholder="Server Name"> <br>
+     <input type="button" class="form-button" value="Create" id="create-server-btn"> <br> <br>
+     <input type="button" class="form-button" value="Cancel" id="cancel-btn">
     </div>
+   </form>
+
+   <form class="form-hidden" style="display: none"> 
+    <input type="text" id="message-field">
+    <input type = "button" id="send-btn" value="Send">
+   </form>
   </div>
  </body>
 </html>
-

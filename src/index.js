@@ -2,20 +2,20 @@ import {auth, fbauth, chatRef, rtdb} from './firebase-connection.js';
 
 let username;
 let messageID = 0; // message id to keep track of incoming messages in the database
-let signUpForm = true; // Flag to check whether or not we are in Sign Up page
-let loginForm = false; // Flag to check whether or not we are in Login page
+let signUpForm = false; // Flag to check whether or not we are in Sign Up page
+let loginForm = true; // Flag to check whether or not we are in Login page
 let passwordResetPage = false; // Flag to check whether or not we are in Password Reset page
-    
+
 let handleHash = function(){
     if(signUpForm == true){
         document.getElementById("login").style = "display: none";
-        document.getElementById("signup").style = "display: block; text-align: center";
+        document.getElementById("signup").style = "display: block";
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: none";
     }
     if(loginForm == true){
         document.getElementById("signup").style = "display: none";
-        document.getElementById("login").style = "display: block; text-align: center";
+        document.getElementById("login").style = "display: block";
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: none";
     }
@@ -25,7 +25,7 @@ let handleHash = function(){
         document.getElementById("signup").style = "display: none";
         document.getElementById("login").style = "display: none";
         document.getElementById("main_page").style = "display: none";
-        document.getElementById("password-reset").style = "display: block; text-align: center";
+        document.getElementById("password-reset").style = "display: block";
 
         fbauth.sendPasswordResetEmail(auth, email).then(() => {
             // Password reset email sent!
@@ -174,9 +174,30 @@ document.getElementById("send-btn").onclick = function(){
             }
 
             editMessage.style = "display: none";
-        }
+        }   
     };
     chats.appendChild(message);
     chats.appendChild(editMessage);
     chats.appendChild(lineBreak);
+}
+
+document.getElementById("addserver-btn").onclick = function(){
+    document.getElementById("create-server").style.display = "block";
+}
+
+document.getElementById("cancel-btn").onclick = function(){
+    document.getElementById("create-server").style.display = "none";
+}
+
+document.getElementById("create-server-btn").onclick = function(){
+    let serverList = document.getElementById("serverlist");
+    let server = document.createElement("div");
+    let serverName = String(document.getElementById("server-name").value);
+
+    server.innerHTML = "<a href='' style='text-decoration: none; color: white'>" + serverName + "</a>";
+    serverList.appendChild(server);
+
+    document.getElementById("create-server").style.display = "none";
+    document.getElementById("server-name").value = "";
+
 }

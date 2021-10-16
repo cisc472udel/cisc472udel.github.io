@@ -9,6 +9,42 @@ let passwordResetPage = false; // Flag to check whether or not we are in Passwor
 let mainPage = false;
 let serverPage = false;
 
+let memberClickHandler = function(member){
+    if(adminstatus() == true){
+        memberRef.child("member").child("admin").setValue(true);
+        let adminContainer = document.getElementById("adminName");
+        adminContainer.innerHTML = "";
+        let newadmin = document.createElement("div");
+        newadmin.innerHTML = member["username"];
+        newadmin.style = "color: yellow";
+        adminContainer.appendChild(newadmin);
+        
+    }
+}
+    
+let adminstatus = function(){
+    rtdb.get(memberRef).then(ss=>{
+        ss.forEach(member=>{
+            if (member.val()["username"== username]){
+                if(member.val()["admin"==true){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+        
+        });
+    });
+}
+                            
+                           
+             
+                   
+         
+                   
+                   
+        
+
 let serverClickHandler = function(name){
     let serverList = document.getElementById("serverlist");
     rtdb.get(serverRef).then(ss=>{
@@ -30,6 +66,9 @@ let serverClickHandler = function(name){
                     currMember.innerHTML = member["username"];
                     currMember.style = "color: yellow";
                     membersList.appendChild(currMember);
+                    currMember.onclick = function(){
+                    memberClickHandler(member);
+            }
                 });
 
                 let adminContainer = document.getElementById("adminName");
@@ -127,6 +166,8 @@ let handleHash = function(){
         document.getElementById("serverPage").style = "display: block";
     }
 };
+
+document.getElementbyId
 
 document.getElementById("login-link").onclick = function(){
     loginForm = true;

@@ -64,7 +64,7 @@
    <form class="form" style="display: none" id="main_page">
     <div class="wrapper" id="wrapper-sidebar">
      <div class="sidebar">
-      <h1>Servers</h1>
+      <h2>Servers</h2>
       <div class="servers">
        <input type="button" value="Add Server" id="addserver-btn">
        <br><br>
@@ -82,59 +82,34 @@
      <input type="button" class="form-button" value="Create" id="create-server-btn"> <br> <br>
      <input type="button" class="form-button" value="Cancel" id="cancel-btn">
     </div>
+   </form>
 
-   
-   <form class="form-Messagebar style="display: none"">
-    <ul class=list>
-    </ul>
-    <div class="Messagesender">
-      <input name="message-to-send" id="message-field" class="input_msg" placeholder ="Type your message"></input>
-     <button id="send-btn">Send</button>
-    </div>
-  <div class="messagescreen">
+   <form class="form" style="display: none" id="serverPage">
     <div class="wrapper" id="wrapper-sidebar">
      <div class="sidebar">
-       <h3>Server Name</h3>
-      <h1>Members</h1>
-        <ul id="memberlist" class="userlist">
-          <label>User1</label>
-       </ul>
-       <h1>Admins</h1>
-       <ul id="adminlist" class="userlist">
-         <label>admin1</label>
-       </ul>
-       <button id="exit-btn">Exit</button>
-       <! ––
-       <script id="message-template" type="text/x-handlebars-template">
-  <li class="clearfix">
-    <div class="message-data align-right">
-      <span class="message-data-time" >{{time}}, Today</span> &nbsp; &nbsp;
-      <span class="message-data-name" >Olia</span> <i class="fa fa-circle me"></i>
-    </div>
-    <div class="message other-message float-right">
-      {{messageOutput}}
-    </div>
-  </li>
-</script>
-          <script id="message-response-template" type="text/x-handlebars-template">
-  <li>
-    <div class="message-data">
-      <span class="message-data-name"><i class="fa fa-circle online"></i> Vincent</span>
-      <span class="message-data-time">{{time}}, Today</span>
-    </div>
-    <div class="message my-message">
-      {{response}}
-    </div>
-  </li>
-</script>  
-       ––>
-       
-          
-       </div>
+      <div style="text-align: center">
+        <input type="button" value="Leave Server" id="back-btn"> 
+      </div>  
+      <h2>Server Name</h2>
+      <div id="nameOfServer">
       </div>
+
+      <h2> Members </h2>
+      <div id="membersList">
+      </div>
+
+      <h2> Admin </h2>
+      <div id="adminName">
+      </div>
+
      </div>
     </div>
-  </form>
+   </form>
+
+   <form class="form-hidden" style="display: none"> 
+    <input type="text" id="message-field">
+    <input type = "button" id="send-btn" value="Send">
+   </form>
   </div>
  </body>
 </html>

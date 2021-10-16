@@ -3,10 +3,79 @@ import {auth, fbauth, serverRef, rtdb} from './firebase-connection.js';
 let username;
 let user;
 let userUID;
-let messageID = 0; // message id to keep track of incoming messages in the database
 let signUpForm = false; // Flag to check whether or not we are in Sign Up page
 let loginForm = true; // Flag to check whether or not we are in Login page
 let passwordResetPage = false; // Flag to check whether or not we are in Password Reset page
+let mainPage = false;
+let serverPage = false;
+
+let serverClickHandler = function(name){
+    let serverList = document.getElementById("serverlist");
+    rtdb.get(serverRef).then(ss=>{
+        ss.forEach(s=>{
+            if(s.val()["name"] == name){
+                let nameContainer = document.getElementById("nameOfServer");
+                nameContainer.innerHTML = "";
+
+                let name = document.createElement("div");
+                name.innerHTML = s.val()["name"];
+                name.style = "color: yellow";
+                nameContainer.appendChild(name);
+
+                let membersList = document.getElementById("membersList");
+                membersList.innerHTML = "";
+
+                s.val()["members"].forEach(member=>{
+                    let currMember = document.createElement("div");
+                    currMember.innerHTML = member["username"];
+                    currMember.style = "color: yellow";
+                    membersList.appendChild(currMember);
+                });
+
+                let adminContainer = document.getElementById("adminName");
+                adminContainer.innerHTML = "";
+
+                let adminName = document.createElement("div");
+                adminName.innerHTML = s.val()["createdBy"]["username"];
+                adminName.style = "color: yellow";
+                adminContainer.appendChild(adminName);
+            }
+        })
+    });
+
+    loginForm = false;
+    signUpForm = false;
+    passwordResetPage = false;
+    mainPage = false;
+    serverPage = true;
+
+    location.href = "#serverPage"
+    window.addEventListener("hashchange", handleHash);
+    window.addEventListener("load", handleHash);
+    
+    serverList.innerHTML = "";
+}
+
+let displayServers = function(){
+    let serverList = document.getElementById("serverlist");
+
+    // Read servers from the database, if any, and store it in the sidepanel container for list of servers
+    rtdb.get(serverRef).then(ss=>{
+        ss.forEach(server => {
+            let currServer = document.createElement("div");
+            let serverName = server.val()["name"];
+
+            currServer.innerHTML = serverName;
+            currServer.style = "color: white";
+            currServer.id = serverName;
+            currServer.onclick = function(){
+                serverClickHandler(currServer.id);
+            }
+
+            serverList.appendChild(currServer);
+       });
+    });
+}
 
 let handleHash = function(){
     if(signUpForm == true){
@@ -14,12 +83,14 @@ let handleHash = function(){
         document.getElementById("signup").style = "display: block";
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: none";
+        document.getElementById("serverPage").style = "display: none";
     }
     if(loginForm == true){
         document.getElementById("signup").style = "display: none";
         document.getElementById("login").style = "display: block";
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: none";
+        document.getElementById("serverPage").style = "display: none";
     }
     if(passwordResetPage == true){
         let email = document.getElementById("signin-email").value;
@@ -28,6 +99,7 @@ let handleHash = function(){
         document.getElementById("login").style = "display: none";
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: block";
+        document.getElementById("serverPage").style = "display: none";
 
         fbauth.sendPasswordResetEmail(auth, email).then(() => {
             // Password reset email sent!
@@ -37,12 +109,31 @@ let handleHash = function(){
             alert(errorCode);
         });
     }
+    if(mainPage == true){
+        document.getElementById("signup").style = "display: none";
+        document.getElementById("login").style = "display: none";
+        document.getElementById("main_page").style = "display: block";
+        document.getElementById("password-reset").style = "display: none";
+        document.getElementById("serverPage").style = "display: none";
+
+        displayServers();
+    }
+
+    if(serverPage == true){
+        document.getElementById("signup").style = "display: none";
+        document.getElementById("login").style = "display: none";
+        document.getElementById("main_page").style = "display: none";
+        document.getElementById("password-reset").style = "display: none";
+        document.getElementById("serverPage").style = "display: block";
+    }
 };
 
 document.getElementById("login-link").onclick = function(){
     loginForm = true;
     signUpForm = false;
     passwordResetPage = false;
+    mainPage = false;
+    serverPage = false;
     document.getElementById("signupChecker").innerText = "";
     document.getElementById("user-email").value = "";
     document.getElementById("user-username").value = "";
@@ -55,6 +146,8 @@ document.getElementById("password-reset-login-link").onclick = function() {
     loginForm = true;
     signUpForm = false;
     passwordResetPage = false;
+    mainPage = false;
+    serverPage = false;
     window.addEventListener("hashchange", handleHash);
     window.addEventListener("load", handleHash);
     document.getElementById("signin-email").value = "";
@@ -65,6 +158,8 @@ document.getElementById("signup-link").onclick = function(){
     loginForm = false;
     signUpForm = true;
     passwordResetPage = false;
+    mainPage = false;
+    serverPage = false;
     document.getElementById("signin-email").value = "";
     document.getElementById("signin-password").value = "";
     window.addEventListener("hashchange", handleHash);
@@ -90,11 +185,17 @@ document.getElementById("login-btn").onclick = function(){
     let password = document.getElementById("signin-password").value;
 
     fbauth.signInWithEmailAndPassword(auth, email, password).then(()=>{
+        loginForm = false;
+        signUpForm = false;
+        passwordResetPage = false;
+        mainPage = true;
+        serverPage = false;
         user = auth.currentUser;       
         userUID = user.uid;
+
         location.href = "#main_page";
-        window.addEventListener("hashchange", mainPageHash);
-        window.addEventListener("load", mainPageHash);
+        window.addEventListener("hashchange", handleHash);
+        window.addEventListener("load", handleHash);
     }).catch(e=>{
         alert(e.code);
     })
@@ -105,78 +206,11 @@ document.getElementById("password-reset-link").onclick = function(){
     passwordResetPage = true;
     signUpForm = false;
     loginForm = false;
+    mainPage = false;
+    serverPage = false;
     window.addEventListener("hashchange", handleHash);
     window.addEventListener("load", handleHash);
 };
-
-let mainPageHash = function() {
-    document.getElementById("signup").style = "display: none";
-    document.getElementById("login").style = "display: none";
-    document.getElementById("password-reset").style = "display: none";
-    document.getElementById("main_page").style = "display: block";
-}
-/*
-// Action to be performed when user clicks on "Send" button within Main Page of Discord
-document.getElementById("send-btn").onclick = function(){
-
-    messageID = messageID + 1;
-    let msgRef = rtdb.child(chatRef, String(messageID));
-
-    let messageIDObj = {
-        "id": messageID,
-        "username": String(username),
-        "message" : document.getElementById("message-field").value,
-        "edited": false
-    }
-
-    rtdb.update(msgRef, messageIDObj);
-
-    rtdb.onValue(msgRef, ss=>{
-        alert(JSON.stringify(ss.val()));
-    });
-
-    let chats = document.getElementById("chats");
-    let message = document.createElement("div");
-    let editMessage = document.createElement("div");
-    let lineBreak = document.createElement("br");
-    
-    message.className = "msg";
-    message.innerHTML = messageIDObj.message;
-
-    let textBox = document.createElement("input");
-    textBox.type = "text";
-    textBox.id = "edit-field-id-" + String(messageIDObj.id);
-    textBox.placeholder = "Edit Your Message";
-
-    let sendBtn = document.createElement("input");
-    sendBtn.type = "button";
-    sendBtn.id = "send-edit-btn-id-" + String(messageIDObj.id);
-    sendBtn.value = "Send Your Edit";
-
-    editMessage.appendChild(textBox);
-    editMessage.appendChild(sendBtn);
-
-    editMessage.style = "display: none";
-    message.onclick = function(){
-
-        editMessage.style = "display: block";
-        document.getElementById(sendBtn.id).onclick = function(){
-            let editedText = String(document.getElementById(textBox.id).value).trim();
-            if(editedText.length > 0){
-                messageIDObj.edited = true;
-                message.innerHTML = editedText + " (Edited)";
-                messageIDObj.message = editedText; 
-                rtdb.update(msgRef, messageIDObj);
-            }
-
-            editMessage.style = "display: none";
-        }   
-    };
-    chats.appendChild(message);
-    chats.appendChild(editMessage);
-    chats.appendChild(lineBreak);
-}
-*/
 
 document.getElementById("addserver-btn").onclick = function(){
     document.getElementById("create-server").style.display = "block";
@@ -191,7 +225,12 @@ document.getElementById("create-server-btn").onclick = function(){
     let server = document.createElement("div");
     let serverName = String(document.getElementById("server-name").value);
 
-    server.innerHTML = "<a href='' style='text-decoration: none; color: white'>" + serverName + "</a>";
+    server.innerHTML = serverName;
+    server.style = "color: white";
+    server.id = serverName;
+    server.onclick = function(){
+        serverClickHandler(server.id);
+    }
     serverList.appendChild(server);
 
     document.getElementById("create-server").style.display = "none";
@@ -205,6 +244,7 @@ document.getElementById("create-server-btn").onclick = function(){
     }
 
     let serverObj = {
+        "name": serverName,
         "chats": [],
         "members": [
             userObj
@@ -214,9 +254,20 @@ document.getElementById("create-server-btn").onclick = function(){
     };
 
     rtdb.update(nameRef, serverObj);
+}
 
-    rtdb.onValue(serverRef, ss=>{
-        alert(JSON.stringify(ss.val()));
-    });
+document.getElementById("back-btn").onclick = function(){
+    loginForm = false;
+    signUpForm = true;
+    passwordResetPage = false;
+    mainPage = true;
+    serverPage = false;
 
+    document.getElementById("nameOfServer").innerHTML = "";
+    document.getElementById("membersList").innerHTML = "";
+    document.getElementById("adminName").innerHTML = "";
+
+    location.href = "#main_page"
+    window.addEventListener("hashchange", handleHash);
+    window.addEventListener("load", handleHash);
 }

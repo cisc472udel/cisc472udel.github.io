@@ -69,6 +69,28 @@ let serverClickHandler = function(name, username, useremail){
                         if(member["admin"]){
                             isAdmin = true;
                             document.getElementById("delete-server-btn-container").style = "display: block";
+
+                            document.getElementById("delete-server-btn").onclick = function(){
+                                let serverNameRef = rtdb.child(serverRef, name);
+                                rtdb.set(serverNameRef, null);
+
+                                loginForm = false;
+                                signUpForm = false;
+                                passwordResetPage = false;
+                                mainPage = true;
+                                serverPage = false;
+                            
+                                document.getElementById("nameOfServer").innerHTML = "";
+                                document.getElementById("membersList").innerHTML = "";
+                                document.getElementById("adminName").innerHTML = "";
+                                document.getElementById("leave-server-btn-container").style = "display: none";
+                                document.getElementById("join-server-btn-container").style = "display: none";
+                                document.getElementById("delete-server-btn-container").style = "display: none";
+                            
+                                location.href = "#main_page"
+                                window.addEventListener("hashchange", handleHash);
+                                window.addEventListener("load", handleHash);
+                            }
                         }
                         else{
                             document.getElementById("delete-server-btn-container").style = "display: none";
@@ -82,7 +104,6 @@ let serverClickHandler = function(name, username, useremail){
                     document.getElementById("join-server-btn").onclick = function(){
                         document.getElementById("join-server-btn-container").style = "display: none";
                         document.getElementById("leave-server-btn-container").style = "display: block";
-
                         let serverNameRef = rtdb.child(serverRef, name);
                         let currMembers = server.val()["members"];
                     
@@ -100,8 +121,31 @@ let serverClickHandler = function(name, username, useremail){
                         }
                     
                         rtdb.update(serverNameRef, membersObj);
-
                         renderServerPage(name);
+
+                        document.getElementById("leave-server-btn").onclick = function(){
+                            document.getElementById("join-server-btn-container").style = "display: block";
+                            document.getElementById("leave-server-btn-container").style = "display: none";
+                            let index = 0;
+                            let serverNameRef = rtdb.child(serverRef, name);
+                            let currMembers = server.val()["members"];
+
+                            currMembers.forEach(member=>{
+                                if(member["username"] == username && member["email"] == useremail){
+                                    currMembers.splice(index, 1);
+                                }
+                                else{
+                                    index = index + 1;
+                                }
+                            });
+
+                            let membersObj = {
+                                "members": currMembers
+                            }
+
+                            rtdb.update(serverNameRef, membersObj);
+                            renderServerPage(name);
+                        }
                     };
                     
                 }
@@ -354,7 +398,7 @@ document.getElementById("create-server-btn").onclick = function(){
 
 document.getElementById("back-btn").onclick = function(){
     loginForm = false;
-    signUpForm = true;
+    signUpForm = false;
     passwordResetPage = false;
     mainPage = true;
     serverPage = false;

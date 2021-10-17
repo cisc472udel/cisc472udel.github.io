@@ -27,7 +27,7 @@ let renderServerPage = function(serverName){
 
                 let name = document.createElement("div");
                 name.innerHTML = s.val()["name"];
-                name.style = "color: yellow";
+                name.style = "color: yellow; text-align: center";
                 nameContainer.appendChild(name);
 
                 let membersList = document.getElementById("membersList");
@@ -36,7 +36,7 @@ let renderServerPage = function(serverName){
                 s.val()["members"].forEach(member=>{
                     let currMember = document.createElement("div");
                     currMember.innerHTML = member["username"];
-                    currMember.style = "color: yellow";
+                    currMember.style = "color: yellow; text-align: center";
                     membersList.appendChild(currMember);
                 });
 
@@ -45,7 +45,7 @@ let renderServerPage = function(serverName){
 
                 let adminName = document.createElement("div");
                 adminName.innerHTML = s.val()["createdBy"]["username"];
-                adminName.style = "color: yellow";
+                adminName.style = "color: yellow; text-align: center";
                 adminContainer.appendChild(adminName);
             }
         })
@@ -184,7 +184,7 @@ let displayServers = function(){
             let serverName = server.val()["name"];
 
             currServer.innerHTML = serverName;
-            currServer.style = "color: white";
+            currServer.style = "color: yellow; text-align: center";
             currServer.id = serverName;
             currServer.onclick = function(){
                 serverClickHandler(currServer.id, username, userEmail);
@@ -365,7 +365,7 @@ document.getElementById("create-server-btn").onclick = function(){
     let serverName = String(document.getElementById("server-name").value);
 
     server.innerHTML = serverName;
-    server.style = "color: white";
+    server.style = "color: yellow; text-align: center";
     server.id = serverName;
     server.onclick = function(){
         serverClickHandler(server.id, username, userEmail);

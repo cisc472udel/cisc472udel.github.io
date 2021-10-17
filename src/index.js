@@ -184,7 +184,7 @@ let displayServers = function(){
             let serverName = server.val()["name"];
 
             currServer.innerHTML = serverName;
-            currServer.style = "color: yellow; text-align: center";
+            currServer.style = "color: yellow; text-align: center; cursor: pointer";
             currServer.id = serverName;
             currServer.onclick = function(){
                 serverClickHandler(currServer.id, username, userEmail);
@@ -365,7 +365,7 @@ document.getElementById("create-server-btn").onclick = function(){
     let serverName = String(document.getElementById("server-name").value);
 
     server.innerHTML = serverName;
-    server.style = "color: yellow; text-align: center";
+    server.style = "color: yellow; text-align: center; cursor: pointer";
     server.id = serverName;
     server.onclick = function(){
         serverClickHandler(server.id, username, userEmail);

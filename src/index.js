@@ -414,3 +414,28 @@ document.getElementById("back-btn").onclick = function(){
     window.addEventListener("hashchange", handleHash);
     window.addEventListener("load", handleHash);
 }
+
+document.getElementById("logout-btn").onclick = function(){
+
+    fbauth.signOut(auth).then(() => {
+        // Sign-out successful.
+        loginForm = true;
+        signUpForm = false;
+        passwordResetPage = false;
+        mainPage = false;
+        serverPage = false;
+
+        location.href= "#login"
+        window.addEventListener("hashchange", handleHash);
+        window.addEventListener("load", handleHash);
+
+        document.getElementById("signin-email").value = "";
+        document.getElementById("signin-password").value = "";
+
+        let serverList = document.getElementById("serverlist");
+        serverList.innerHTML = "";
+      }).catch((e) => {
+        // An error happened.
+        alert(e);
+      });      
+}

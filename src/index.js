@@ -167,12 +167,12 @@ let serverClickHandler = function(name, username, useremail){
         let message1 = document.getElementById("message-field").value;
         document.getElementById("message-field").value="";
         const currenttime = new Date();
-        let timedisplay=currenttime.toUTCString();
+        
         
         
         let chatObj = { 
             "message": message1,
-            "timestamp": timedisplay,
+            "timestamp": currenttime.toUTCString(),
             "username": username
         };
        

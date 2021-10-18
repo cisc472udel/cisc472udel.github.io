@@ -188,12 +188,11 @@ let serverClickHandler = function(name, username, useremail){
   let listOfMessages = document.getElementById("PastMessages");
   listOfMessages.innerHTML = ''; 
   for (const message in allMessages) {
-    let currenttime = Date().valueOf();
     let displayuser = document.createElement('div');
-    displayuser.innerText = username + " " + currenttime;
+    displayuser.innerText = username + " " + allMessages[message].timestamp;
     let displayedMessage = document.createElement('ul');
 
-    if(message.username == username){ 
+    if(allMessages[message].username == username){ 
        let displayedMessage = document.createElement('ul');
        displayedMessage.setAttribute("class", "personalmessage");
        

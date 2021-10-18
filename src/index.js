@@ -254,8 +254,7 @@ let serverClickHandler = function(name, username, useremail){
         
         for (const message in allMessages) {
             let displayuser = document.createElement('div');
-            displayuser.innerText = allMessages[message].username + " " + allMessages[message].timestamp;
-            displayuser.style = "font-size: 14px; color: red";
+            displayuser.innerHTML = "<span style='font-size:14px;font-weight: bold'>" + allMessages[message].username + "</span> &nbsp; <span style='font-size:14px; color: grey'>" + allMessages[message].timestamp + "</span>";
             let displayedMessage = document.createElement('ul');
 
             if(allMessages[message].username == username){ 

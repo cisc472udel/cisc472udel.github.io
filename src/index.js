@@ -1,3 +1,8 @@
+/**
+ * Author: Raj Trivedi, David Lizotte
+ * Date: October 18th, 2021
+ */
+
 import {auth, fbauth, serverRef, appusersRef, rtdb} from './firebase-connection.js';
 
 let userName;

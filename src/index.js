@@ -157,7 +157,56 @@ let serverClickHandler = function(name, username, useremail){
             }
         });
     });
+    let servernameRef = rtdb.child(serverRef, name);
+    let messageRef = rtdb.child(servernameRef, "chats");
+    let messagegroupRef = rtdb.child(messageRef, "message");
+    document.getElementById("send-btn").onclick = function(){
+        let servernameRef = rtdb.child(serverRef, name);
+        let messageRef = rtdb.child(servernameRef, "chats");
+        let messagegroupRef = rtdb.child(messageRef, "message");
+        let message1 = document.getElementById("message-field").value;
+        document.getElementById("message-field").value="";
+        let currenttime = Date().valueOf();
+        
+        let chatObj = { 
+            "message": message1,
+            "timestamp": currenttime,
+            "username": username
+        };
+       
+        
+        rtdb.push(messagegroupRef, chatObj);
+   
+    }
+                                
+                               
+    
+    rtdb.onValue(messagegroupRef ,ss => {
+  let allMessages = ss.val();
+  let listOfMessages = document.getElementById("PastMessages");
+  listOfMessages.innerHTML = ''; 
+  for (const message in allMessages) {
+    let currenttime = Date().valueOf();
+    let displayuser = document.createElement('div');
+    let username = document.getElementById("user-username").value;
+    displayuser.innerText = username + " " + currenttime;
+    let displayedMessage = document.createElement('ul');
 
+    if(message.username == username){ 
+       let displayedMessage = document.createElement('ul');
+       displayedMessage.setAttribute("class", "personalmessage");
+       
+    }else{
+       let displayedMessage = document.createElement('ul');
+       displayedMessage.setAttribute("class", "personalmessage");
+    }
+    let userName = document.createElement('span');
+    listOfMessages.appendChild(displayuser);
+    listOfMessages.appendChild(displayedMessage);
+    displayedMessage.innerText = allMessages[message].message;
+
+  }
+});
     renderServerPage(name);
 
     loginForm = false;

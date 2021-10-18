@@ -1,6 +1,6 @@
 import {auth, fbauth, serverRef, appusersRef, rtdb} from './firebase-connection.js';
 
-let username;
+let userName;
 let userEmail;
 let user;
 let userUID;
@@ -31,12 +31,64 @@ let banMemberAction = function(serverName, username, useremail){
 
 let makeAdminAction = function(serverName, username, useremail){
     // 1. Set "admin" role to be true for the given user in database
+        let serverNameRef = rtdb.child(serverRef, serverName);
+        let index = 0;
+        rtdb.get(serverRef).then(ss=>{
+            ss.forEach(server=>{
+                if(server.val()["name"] == serverName){ 
+                    server.val()["members"].forEach(member=>{
+                        if(member["username"] == username && member["email"] == useremail){
+                        
+                           let memberRef = rtdb.child(serverNameRef, "members");
+                           let currMemberRef = rtdb.child(memberRef, String(index));
+                          
+                           let currMemberObj ={
+                               "role": {
+                                 "admin": true
+                               },
+                               
+                                "userID": member["userID"],
+                                "username": username,
+                                "email": useremail
+                               
+                           };
+                            
+                            rtdb.update(currMemberRef, currMemberObj);
+                            
+                            let currAdmins = server.val()["admins"];
 
+                            let currAdminObj = {
+                                "role": {
+                                    "admin": true
+                                },
+                                "userID": member["userID"],
+                                "username": username,
+                                "email": useremail
+                            }
+                    
+                            currAdmins.push(currAdminObj);
+                    
+                            let adminsObj = {
+                                "admins": currAdmins
+                            }
+                    
+                            rtdb.update(serverNameRef, adminsObj); 
+
+                        }else{
+                            index++;
+                        }
+                    });
+                }
+            });
+        });
+                              
 };
 
 let renderServerPage = function(serverName, username, useremail, isAdmin){
 
     let isCurrentMemberAdmin = false;
+    let currentMemberUserName;
+    let currentMemberEmail;
 
     // Color up the server page before routing there
     rtdb.get(serverRef).then(ss=>{
@@ -65,6 +117,9 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                             if(member["role"]["admin"]){
                                 isCurrentMemberAdmin = true;
                             }        
+                            currentMemberUserName = member["username"];
+                            currentMemberEmail = member["email"];
+                            
                             currMember.style = "color: yellow; text-align: center; cursor: pointer";
                             currMember.onclick = function(){
                                 document.getElementById("messagebar").style = "display: none";
@@ -134,7 +189,8 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                                     }
                                 
                                     if(makeAdmin){
-                                        makeAdminAction(serverName, username, useremail);
+                                        alert(currentMemberUserName + " " + currentMemberEmail);
+                                        makeAdminAction(serverName, currentMemberUserName, currentMemberEmail);
                                     }
 
                                     // 2. Close the "User Settings" Form
@@ -363,7 +419,7 @@ let displayServers = function(){
             currServer.style = "color: yellow; text-align: center; cursor: pointer";
             currServer.id = serverName;
             currServer.onclick = function(){
-                serverClickHandler(currServer.id, username, userEmail);
+                serverClickHandler(currServer.id, userName, userEmail);
             }
 
             serverList.appendChild(currServer);
@@ -468,14 +524,14 @@ document.getElementById("signup-btn").onclick = function(e){
 
     fbauth.createUserWithEmailAndPassword(auth, email, password).then(()=>{
         document.getElementById("signupChecker").innerText = "SIGNUP SUCCESSFUL!!!";
-        username = document.getElementById("user-username").value;
+        userName = document.getElementById("user-username").value;
 
         // Write username and email upon signup to the firebase to retrieve user information on fly
         let appuserIDRef = rtdb.child(appusersRef, String(appuserID));
         appuserID = appuserID + 1;
         let userObj = {
             "email": String(email),
-            "username": String(username)
+            "username": String(userName)
         };
         rtdb.update(appuserIDRef, userObj);
 
@@ -504,7 +560,7 @@ document.getElementById("login-btn").onclick = function(){
         rtdb.get(appusersRef).then(ss=>{
             ss.forEach(appuser=>{
                 if(appuser.val()["email"] == emailStr){
-                    username = appuser.val()["username"];
+                    userName = appuser.val()["username"];
                     userEmail = emailStr;
                 }
             });
@@ -546,7 +602,7 @@ document.getElementById("create-server-btn").onclick = function(){
     server.style = "color: yellow; text-align: center; cursor: pointer";
     server.id = serverName;
     server.onclick = function(){
-        serverClickHandler(server.id, username, userEmail);
+        serverClickHandler(server.id, userName, userEmail);
     }
     serverList.appendChild(server);
 
@@ -559,7 +615,7 @@ document.getElementById("create-server-btn").onclick = function(){
             "admin": true
         },
         "userID": userUID,
-        "username": username,
+        "username": userName,
         "email": userEmail
     }
 

@@ -530,6 +530,7 @@ let handleHash = function(){
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: none";
         document.getElementById("serverPage").style = "display: none";
+        document.getElementById("app-title").style = "display: block";
     }
     if(loginForm == true){
         document.getElementById("signup").style = "display: none";
@@ -537,6 +538,7 @@ let handleHash = function(){
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: none";
         document.getElementById("serverPage").style = "display: none";
+        document.getElementById("app-title").style = "display: block";
     }
     if(passwordResetPage == true){
         let email = document.getElementById("signin-email").value;
@@ -546,6 +548,7 @@ let handleHash = function(){
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: block";
         document.getElementById("serverPage").style = "display: none";
+        document.getElementById("app-title").style = "display: none";
 
         fbauth.sendPasswordResetEmail(auth, email).then(() => {
             // Password reset email sent!
@@ -562,6 +565,7 @@ let handleHash = function(){
         document.getElementById("password-reset").style = "display: none";
         document.getElementById("serverPage").style = "display: none";
         document.getElementById("container").style = "display: block";
+        document.getElementById("app-title").style = "display: none";
 
         displayServers();
     }
@@ -573,6 +577,7 @@ let handleHash = function(){
         document.getElementById("password-reset").style = "display: none";
         document.getElementById("serverPage").style = "display: block";
         document.getElementById("container").style = "display: none";
+        document.getElementById("app-title").style = "display: none";
     }
 };
 

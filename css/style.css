@@ -5,6 +5,11 @@
   text-align: center;
 
 }
+
+#app-title {
+  text-align: center;
+  color: white
+}
 .personalmessage{
   text-align: right;
 }

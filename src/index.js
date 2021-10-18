@@ -61,6 +61,8 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                         if(isAdmin){
                             currMember.style = "color: yellow; text-align: center; cursor: pointer";
                             currMember.onclick = function(){
+                                document.getElementById("messagebar").style = "display: none";
+                                document.getElementById("container").style = "display: block";
                                 document.getElementById("user-settings").style = "display: block";
                             /*
                                 document.getElementById("submit-changes-btn").onclick = function(){
@@ -91,11 +93,15 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                                 
                                     // 3. Close the "User Settings" Form
                                     document.getElementById("user-settings").style.display = "none";
+                                    document.getElementById("container").style = "display: none";
+                                    document.getElementById("messagebar").style = "display: block";
                                 }
                              */   
                                 
                                 document.getElementById("close-btn").onclick = function(){
                                     document.getElementById("user-settings").style.display = "none";
+                                    document.getElementById("container").style = "display: none";
+                                    document.getElementById("messagebar").style = "display: block";
                                 }
                                 
                             }
@@ -142,6 +148,7 @@ let serverClickHandler = function(name, username, useremail){
                         if(member["role"]["admin"]){
                             isAdmin = true;
                             document.getElementById("delete-server-btn-container").style = "display: block";
+                            document.getElementById("messagebar").style = "display: block";
 
                             document.getElementById("delete-server-btn").onclick = function(){
                                 let serverNameRef = rtdb.child(serverRef, name);
@@ -168,16 +175,20 @@ let serverClickHandler = function(name, username, useremail){
                         }
                         else{
                             document.getElementById("leave-server-btn-container").style = "display: block";
+                            document.getElementById("messagebar").style = "display: block";
                         }
                     }
                 });
 
                 if(!userExists){
                     document.getElementById("join-server-btn-container").style = "display: block";
+                    document.getElementById("messagebar").style = "display: none";
 
                     document.getElementById("join-server-btn").onclick = function(){
                         document.getElementById("join-server-btn-container").style = "display: none";
                         document.getElementById("leave-server-btn-container").style = "display: block";
+                        document.getElementById("messagebar").style = "display: block";
+
                         let serverNameRef = rtdb.child(serverRef, name);
                         let currMembers = server.val()["members"];
 
@@ -202,6 +213,7 @@ let serverClickHandler = function(name, username, useremail){
                         document.getElementById("leave-server-btn").onclick = function(){
                             document.getElementById("join-server-btn-container").style = "display: block";
                             document.getElementById("leave-server-btn-container").style = "display: none";
+                            document.getElementById("messagebar").style = "display: none";
                             let index = 0;
                             let serverNameRef = rtdb.child(serverRef, name);
                             let currMembers = server.val()["members"];

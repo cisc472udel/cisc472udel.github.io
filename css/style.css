@@ -162,6 +162,7 @@ body{
  background:var(--color-primary);
  background-size: cover;
 }
+
 .container{
  width: 400px;
  max-width: 400px;

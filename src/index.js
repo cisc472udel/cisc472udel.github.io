@@ -62,7 +62,6 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                             currMember.style = "color: yellow; text-align: center; cursor: pointer";
                             currMember.onclick = function(){
                                 document.getElementById("messagebar").style = "display: none";
-                                document.getElementById("container").style = "display: block";
                                 document.getElementById("user-settings").style = "display: block";
                             /*
                                 document.getElementById("submit-changes-btn").onclick = function(){
@@ -100,7 +99,6 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                                 
                                 document.getElementById("close-btn").onclick = function(){
                                     document.getElementById("user-settings").style.display = "none";
-                                    document.getElementById("container").style = "display: none";
                                     document.getElementById("messagebar").style = "display: block";
                                 }
                                 

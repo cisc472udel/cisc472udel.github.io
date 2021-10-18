@@ -163,6 +163,23 @@ body{
  background-size: cover;
 }
 
+#user-settings {
+  width: 400px;
+  max-width: 400px;
+  margin: 1rem;
+  padding: 2rem;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+  background: #ffffff;
+}
+
+.user-settings-group{
+  margin-bottom: 1rem;
+ }
+
+.form-button{
+  font: 500 1rem 'Quicksand', sans-serif;
+ }
+ 
 .container{
  width: 400px;
  max-width: 400px;

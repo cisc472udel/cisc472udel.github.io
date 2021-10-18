@@ -292,6 +292,7 @@ let handleHash = function(){
         document.getElementById("main_page").style = "display: none";
         document.getElementById("password-reset").style = "display: none";
         document.getElementById("serverPage").style = "display: block";
+        document.getElementById("container").style = "display: none";
     }
 };
 

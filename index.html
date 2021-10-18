@@ -85,6 +85,7 @@
      <input type="button" class="form-button" value="Cancel" id="cancel-btn">
     </div>
    </form>
+  </div>
 
    <form class="form" style="display: none" id="serverPage">
     <div class="wrapper" id="wrapper-sidebar">
@@ -119,11 +120,14 @@
 
      </div>
     </div>
-   </form>
-   
-   <form class="form-hidden" style="display: none"> 
-    <input type="text" id="message-field">
-    <input type = "button" id="send-btn" value="Send">
+     <div class="Messagebar">
+       <div id="PastMessages"class="ListofChats">
+       </div>
+       <div class="Messagesender">
+        <input type="text" id="message-field" class="input_msg" placeholder ="Type your message"></input>
+        <input type="button" value="Send" id="send-btn">
+       </div>
+     </div>
    </form>
   </div>
  </body>

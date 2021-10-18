@@ -20,13 +20,119 @@ rtdb.get(appusersRef).then(ss=>{
 let kickMemberAction = function(serverName, username, useremail){
     // 1. Kick out the given user from given server
        // - Delete entry of that user from "members" list in database
+       rtdb.get(serverRef).then(ss=>{
+        ss.forEach(server=>{
+            if(server.val()["name"] == serverName){
+
+                let serverNameRef = rtdb.child(serverRef, serverName);
+                let index = 0;
+                let currMembers = server.val()["members"];
+                currMembers.forEach(member=>{
+                    if(member["username"] == username && member["email"] == useremail){
+                        currMembers.splice(index, 1);
+                    }
+                    else{
+                        index = index + 1;
+                    }
+                });
+
+                let membersObj = {
+                    "members": currMembers
+                }
+
+                rtdb.update(serverNameRef, membersObj);
+
+                index = 0;
+                let currAdmins = server.val()["admins"];
+                currAdmins.forEach(admin=>{
+                    if(admin["username"] == username && admin["email"] == useremail){
+                        currAdmins.splice(index, 1);
+                        let adminsObj = {
+                            "admins" : currAdmins
+                        }
+        
+                        rtdb.update(serverNameRef, adminsObj);
+                    }
+                    else{
+                        index = index + 1;
+                    }
+                });
+            }
+        })
+    });   
+       
     // 2. It would be still possible for that user to re-join the given server
 };
 
 let banMemberAction = function(serverName, username, useremail){
-    // 1. Kick out the given user from given server
-       // - Delete entry of that user from "members" list in database
-    // 2. Unlike "Kick Member", user in this case won't be able to see or join that server again
+    let serverNameRef = rtdb.child(serverRef, serverName);
+    let index = 0;
+
+    // Unlike "Kick Member", user in this case won't be able to join that server until unban by admin
+    rtdb.get(serverRef).then(ss=>{
+        ss.forEach(server=>{
+            if(server.val()["name"] == serverName){
+                server.val()["members"].forEach(member=>{
+                    if(member["username"] == username && member["email"] == useremail){
+                         let currMembers = server.val()["members"];
+                         currMembers.splice(index, 1);
+
+                         let membersObj = {
+                             "members" : currMembers
+                         }
+
+                         rtdb.update(serverNameRef, membersObj);
+                         
+                         index = 0;
+                         let currAdmins = server.val()["admins"];
+                         currAdmins.forEach(admin=>{
+                            if(admin["username"] == username && admin["email"] == useremail){
+                                currAdmins.splice(index, 1);
+                                let adminsObj = {
+                                    "admins" : currAdmins
+                                }
+                
+                                rtdb.update(serverNameRef, adminsObj);
+                            }
+                            else{
+                                index = index + 1;
+                            }
+                        });
+
+                        let userObj = {
+                            "userID": member["userID"],
+                            "username": username,
+                            "email": useremail
+                        };
+
+                        if(server.val()["name"]["bans"] == null){
+                            let bans = [];
+                            bans.push(userObj);
+
+                            let banUserObj = {
+                                "bans": bans
+                            };
+
+                            rtdb.update(serverNameRef, banUserObj);
+                        }
+                        else{
+                            bans = server.val()["name"]["bans"];
+                            bans.push(userObj);
+
+                            let banUserObj = {
+                                "bans": bans
+                            };
+
+                            rtdb.update(serverNameRef, banUserObj);
+                        }
+                    }
+                    else{
+                        index = index + 1;
+                    }
+                });
+            }
+        })
+    })
 };
 
 let makeAdminAction = function(serverName, username, useremail){
@@ -43,10 +149,10 @@ let makeAdminAction = function(serverName, username, useremail){
                            let currMemberRef = rtdb.child(memberRef, String(index));
                           
                            let currMemberObj ={
-                               "role": {
-                                 "admin": true
-                               },
-                               
+                                "role": {
+                                  "admin": true
+                                },
+                                "is_banned": false,
                                 "userID": member["userID"],
                                 "username": username,
                                 "email": useremail
@@ -56,17 +162,7 @@ let makeAdminAction = function(serverName, username, useremail){
                             rtdb.update(currMemberRef, currMemberObj);
                             
                             let currAdmins = server.val()["admins"];
-
-                            let currAdminObj = {
-                                "role": {
-                                    "admin": true
-                                },
-                                "userID": member["userID"],
-                                "username": username,
-                                "email": useremail
-                            }
-                    
-                            currAdmins.push(currAdminObj);
+                            currAdmins.push(currMemberObj);
                     
                             let adminsObj = {
                                 "admins": currAdmins
@@ -86,7 +182,6 @@ let makeAdminAction = function(serverName, username, useremail){
 
 let renderServerPage = function(serverName, username, useremail, isAdmin){
 
-    let isCurrentMemberAdmin = false;
     let currentMemberUserName;
     let currentMemberEmail;
 
@@ -114,9 +209,6 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                     }
                     else{
                         if(isAdmin){
-                            if(member["role"]["admin"]){
-                                isCurrentMemberAdmin = true;
-                            }        
                             currentMemberUserName = member["username"];
                             currentMemberEmail = member["email"];
                             
@@ -125,9 +217,8 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                                 document.getElementById("messagebar").style = "display: none";
                                 document.getElementById("user-settings").style = "display: block";
 
-                                if(isCurrentMemberAdmin){
+                                if(member["role"]["admin"]){
                                     document.getElementById("roles-container").innerHTML = "<br> Admin <br> Member";
-                                    isCurrentMemberAdmin = false;
                                 }
                                 else{
                                     document.getElementById("roles-container").innerHTML = "<br> Member";
@@ -136,9 +227,8 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                                 document.getElementById("roles-tab").onclick = function() {
                                     document.getElementById("roles-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
                                     document.getElementById("permissions-tab").style = "color: grey; text-decoration: none; cursor: pointer";
-                                    if(isCurrentMemberAdmin){
+                                    if(member["role"]["admin"]){
                                         document.getElementById("roles-container").innerHTML = "<br> Admin <br> Member";
-                                        isCurrentMemberAdmin = false;
                                     }
                                     else{
                                         document.getElementById("roles-container").innerHTML = "<br> Member";
@@ -156,49 +246,34 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                                 };
                                 
                             
-                                document.getElementById("submit-changes-btn").onclick = function(){
-                                    let kickMember = false;
-                                    let banMember = false;
-                                    let makeAdmin = false;
-                               
-                                    /*
+                                document.getElementById("submit-changes-btn").onclick = function(){                         
+                                    /* 1.
                                         Check from HTML forms what actions admin has taken for a particular user
                                         Change the value of above boolean variables as needed
                                     */
 
-                                    if(document.getElementById("kickUserCheckbox").checked){
-                                        kickMember = true;
+                                    if(document.getElementById("kickUserRadio").checked){
+                                        kickMemberAction(serverName, currentMemberUserName, currentMemberEmail);
                                     }
 
-                                    if(document.getElementById("banUserCheckbox").checked){
-                                        banMember = true;
+                                    else if(document.getElementById("banUserRadio").checked){
+                                        banMemberAction(serverName, currentMemberUserName, currentMemberEmail);
                                     }
                                     
-                                    if(document.getElementById("makeAdminCheckbox").checked){
-                                        makeAdmin = true;
+                                    else if(document.getElementById("makeAdminRadio").checked){
+                                        makeAdminAction(serverName, currentMemberUserName, currentMemberEmail);    
                                     }
                                
-                               
-                                    // 1. Call kickMemberAction(...), banMemberAction(...), and makeAdminAction(...) as appropriate 
-                                    if(kickMember){
-                                        kickMemberAction(serverName, username, useremail);
-                                    }
-                                
-                                    if(banMember){
-                                        banMemberAction(serverName, username, useremail);
-                                    }
-                                
-                                    if(makeAdmin){
-                                        alert(currentMemberUserName + " " + currentMemberEmail);
-                                        makeAdminAction(serverName, currentMemberUserName, currentMemberEmail);
-                                    }
-
                                     // 2. Close the "User Settings" Form
                                     document.getElementById("user-settings").style.display = "none";
-                                    document.getElementById("kickUserCheckbox").checked = false;
-                                    document.getElementById("banUserCheckbox").checked = false;
-                                    document.getElementById("makeAdminCheckbox").checked = false;
+                                    document.getElementById("kickUserRadio").checked = false;
+                                    document.getElementById("banUserRadio").checked = false;
+                                    document.getElementById("makeAdminRadio").checked = false;
                                     document.getElementById("messagebar").style = "display: block";
+                                    document.getElementById("roles-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
+                                    document.getElementById("permissions-tab").style = "color: grey; text-decoration: none; cursor: pointer";
+                                    document.getElementById("roles-container").style = "display: block";
+                                    document.getElementById("permissions-container").style = "display: none";
                                 
                                 }
                               
@@ -242,6 +317,7 @@ let serverClickHandler = function(name, username, useremail){
     let messagegroupRef = rtdb.child(messageRef, "message");
     let userExists = false;
     let isAdmin = false;
+    let isBanned = false;
 
     // Display "Delete Server" button if the user who clicked the server link is an admin
     // Also, add the user to "members" list of the given server, upon clicking "Join Server" button, if he/she is not already there
@@ -251,10 +327,11 @@ let serverClickHandler = function(name, username, useremail){
                 server.val()["members"].forEach(member=>{
                     if(member["username"] == username && member["email"] == useremail){
                         userExists = true;
-
                         if(member["role"]["admin"]){
                             isAdmin = true;
                             document.getElementById("delete-server-btn-container").style = "display: block";
+                            document.getElementById("membersList").style = "display: block";
+                            document.getElementById("adminName").style = "display: block";
                             document.getElementById("messagebar").style = "display: block";
 
                             document.getElementById("delete-server-btn").onclick = function(){
@@ -283,12 +360,31 @@ let serverClickHandler = function(name, username, useremail){
                         else{
                             document.getElementById("leave-server-btn-container").style = "display: block";
                             document.getElementById("messagebar").style = "display: block";
+                            document.getElementById("membersList").style = "display: block";
+                            document.getElementById("adminName").style = "display: block";
                         }
                     }
                 });
 
                 if(!userExists){
-                    document.getElementById("join-server-btn-container").style = "display: block";
+                    if(server.val()["bans"] != null){
+                        server.val()["bans"].forEach(bannedUser=>{
+                            if(bannedUser["username"] == username && bannedUser["email"] == useremail){
+                                isBanned = true;
+                            }
+                        });
+                    }
+
+                    if(!isBanned){
+                        document.getElementById("join-server-btn-container").style = "display: block";
+                        document.getElementById("membersList").style = "display: block";
+                        document.getElementById("adminName").style = "display: block";
+                    }
+                    else{
+                        document.getElementById("join-server-btn-container").style = "display: none";
+                        document.getElementById("membersList").style = "display: none";
+                        document.getElementById("adminName").style = "display: none";
+                    }
                     document.getElementById("messagebar").style = "display: none";
 
                     document.getElementById("join-server-btn").onclick = function(){

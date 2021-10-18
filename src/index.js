@@ -166,7 +166,8 @@ let serverClickHandler = function(name, username, useremail){
         let messagegroupRef = rtdb.child(messageRef, "message");
         let message1 = document.getElementById("message-field").value;
         document.getElementById("message-field").value="";
-        let currenttime = Date().toUTCString();
+        const currenttime = new Date();
+        currenttime.toUTCString();
         
         let chatObj = { 
             "message": message1,

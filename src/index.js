@@ -440,7 +440,17 @@ let serverClickHandler = function(name, username, useremail){
                             }
 
                             rtdb.update(serverNameRef, membersObj);
-                            renderServerPage(name, username, useremail, isAdmin);
+
+                            loginForm = false;
+                            signUpForm = false;
+                            passwordResetPage = false;
+                            mainPage = true;
+                            serverPage = false;
+
+                            location.href = "#main_page"
+                            window.addEventListener("hashchange", handleHash);
+                            window.addEventListener("load", handleHash);
+                            
                         }
                     };
                     

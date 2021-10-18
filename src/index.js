@@ -254,7 +254,7 @@ let serverClickHandler = function(name, username, useremail){
         
         for (const message in allMessages) {
             let displayuser = document.createElement('div');
-            displayuser.innerText = username + " " + allMessages[message].timestamp;
+            displayuser.innerText = allMessages[message].username + " " + allMessages[message].timestamp;
             let displayedMessage = document.createElement('ul');
 
             if(allMessages[message].username == username){ 

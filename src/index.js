@@ -255,6 +255,7 @@ let serverClickHandler = function(name, username, useremail){
         for (const message in allMessages) {
             let displayuser = document.createElement('div');
             displayuser.innerText = allMessages[message].username + " " + allMessages[message].timestamp;
+            displayuser.style = "font-size: 14px; color: red";
             let displayedMessage = document.createElement('ul');
 
             if(allMessages[message].username == username){ 
@@ -269,6 +270,7 @@ let serverClickHandler = function(name, username, useremail){
             listOfMessages.appendChild(displayuser);
             listOfMessages.appendChild(displayedMessage);
             displayedMessage.innerText = allMessages[message].message;
+            displayedMessage.style = "font-size: 14px";
         }
     });
 

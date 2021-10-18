@@ -100,39 +100,52 @@ let renderServerPage = function(serverName, username, useremail, isAdmin){
                                     document.getElementById("permissions-container").style = "display: block";
                                 };
                                 
-                            /*
+                            
                                 document.getElementById("submit-changes-btn").onclick = function(){
                                     let kickMember = false;
                                     let banMember = false;
                                     let makeAdmin = false;
-                             */   
+                               
                                     /*
                                         Check from HTML forms what actions admin has taken for a particular user
                                         Change the value of above boolean variables as needed
                                     */
-                             /*   
+
+                                    if(document.getElementById("kickUserCheckbox").checked){
+                                        kickMember = true;
+                                    }
+
+                                    if(document.getElementById("banUserCheckbox").checked){
+                                        banMember = true;
+                                    }
+                                    
+                                    if(document.getElementById("makeAdminCheckbox").checked){
+                                        makeAdmin = true;
+                                    }
+                               
+                               
                                     // 1. Call kickMemberAction(...), banMemberAction(...), and makeAdminAction(...) as appropriate 
                                     if(kickMember){
-                                        kickMemberAction();
+                                        kickMemberAction(serverName, username, useremail);
                                     }
                                 
                                     if(banMember){
-                                        banMemberAction();
+                                        banMemberAction(serverName, username, useremail);
                                     }
                                 
                                     if(makeAdmin){
-                                        makeAdminAction();
+                                        makeAdminAction(serverName, username, useremail);
                                     }
 
-                                    // 2. Render the given server page again with modified settings
-                                    renderServerPage(serverName);
-                                
-                                    // 3. Close the "User Settings" Form
+                                    // 2. Close the "User Settings" Form
                                     document.getElementById("user-settings").style.display = "none";
-                                    document.getElementById("container").style = "display: none";
+                                    document.getElementById("kickUserCheckbox").checked = false;
+                                    document.getElementById("banUserCheckbox").checked = false;
+                                    document.getElementById("makeAdminCheckbox").checked = false;
                                     document.getElementById("messagebar").style = "display: block";
+                                
                                 }
-                             */   
+                              
                                 
                                 document.getElementById("close-btn").onclick = function(){
                                     document.getElementById("user-settings").style.display = "none";

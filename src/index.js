@@ -188,7 +188,6 @@ let serverClickHandler = function(name, username, useremail){
   for (const message in allMessages) {
     let currenttime = Date().valueOf();
     let displayuser = document.createElement('div');
-    let username = document.getElementById("user-username").value;
     displayuser.innerText = username + " " + currenttime;
     let displayedMessage = document.createElement('ul');
 

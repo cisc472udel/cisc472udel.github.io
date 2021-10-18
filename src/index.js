@@ -17,7 +17,24 @@ rtdb.get(appusersRef).then(ss=>{
     });
 });
 
-let renderServerPage = function(serverName){
+let kickMemberAction = function(serverName, username, useremail){
+    // 1. Kick out the given user from given server
+       // - Delete entry of that user from "members" list in database
+    // 2. It would be still possible for that user to re-join the given server
+};
+
+let banMemberAction = function(serverName, username, useremail){
+    // 1. Kick out the given user from given server
+       // - Delete entry of that user from "members" list in database
+    // 2. Unlike "Kick Member", user in this case won't be able to see or join that server again
+};
+
+let makeAdminAction = function(serverName, username, useremail){
+    // 1. Set "admin" role to be true for the given user in database
+
+};
+
+let renderServerPage = function(serverName, username, useremail, isAdmin){
     // Color up the server page before routing there
     rtdb.get(serverRef).then(ss=>{
         ss.forEach(s=>{
@@ -36,29 +53,85 @@ let renderServerPage = function(serverName){
                 s.val()["members"].forEach(member=>{
                     let currMember = document.createElement("div");
                     currMember.innerHTML = member["username"];
-                    currMember.style = "color: yellow; text-align: center";
+
+                    if(member["username"] == username && member["email"] == useremail){
+                        currMember.style = "color: yellow; text-align: center";
+                    }
+                    else{
+                        if(isAdmin){
+                            currMember.style = "color: yellow; text-align: center; cursor: pointer";
+                            currMember.onclick = function(){
+                                document.getElementById("user-settings").style = "display: block";
+                            /*
+                                document.getElementById("submit-changes-btn").onclick = function(){
+                                    let kickMember = false;
+                                    let banMember = false;
+                                    let makeAdmin = false;
+                             */   
+                                    /*
+                                        Check from HTML forms what actions admin has taken for a particular user
+                                        Change the value of above boolean variables as needed
+                                    */
+                             /*   
+                                    // 1. Call kickMemberAction(...), banMemberAction(...), and makeAdminAction(...) as appropriate 
+                                    if(kickMember){
+                                        kickMemberAction();
+                                    }
+                                
+                                    if(banMember){
+                                        banMemberAction();
+                                    }
+                                
+                                    if(makeAdmin){
+                                        makeAdminAction();
+                                    }
+
+                                    // 2. Render the given server page again with modified settings
+                                    renderServerPage(serverName);
+                                
+                                    // 3. Close the "User Settings" Form
+                                    document.getElementById("user-settings").style.display = "none";
+                                }
+                             */   
+                                
+                                document.getElementById("close-btn").onclick = function(){
+                                    document.getElementById("user-settings").style.display = "none";
+                                }
+                                
+                            }
+                        }
+                        else{
+                            currMember.style = "color: yellow; text-align: center";
+                        }
+                    }
                     membersList.appendChild(currMember);
                 });
 
                 let adminContainer = document.getElementById("adminName");
                 adminContainer.innerHTML = "";
 
-                let adminName = document.createElement("div");
-                adminName.innerHTML = s.val()["createdBy"]["username"];
-                adminName.style = "color: yellow; text-align: center";
-                adminContainer.appendChild(adminName);
+                s.val()["admins"].forEach(admin=>{
+                    let adminName = document.createElement("div");
+                    adminName.innerHTML = admin["username"];
+                    adminName.style = "color: yellow; text-align: center";
+                    adminContainer.appendChild(adminName);
+                });
             }
         })
     });
 }
 
+
 let serverClickHandler = function(name, username, useremail){
     let serverList = document.getElementById("serverlist");
+    let servernameRef = rtdb.child(serverRef, name);
+    let messageRef = rtdb.child(servernameRef, "chats");
+    let messagegroupRef = rtdb.child(messageRef, "message");
     let userExists = false;
     let isAdmin = false;
 
     // Display "Delete Server" button if the user who clicked the server link is an admin
-    // Also, add the user to "members" list of the given server if he/she is not already there
+    // Also, add the user to "members" list of the given server, upon clicking "Join Server" button, if he/she is not already there
     rtdb.get(serverRef).then(ss=>{
         ss.forEach(server=>{
             if(server.val()["name"] == name){
@@ -66,7 +139,7 @@ let serverClickHandler = function(name, username, useremail){
                     if(member["username"] == username && member["email"] == useremail){
                         userExists = true;
 
-                        if(member["admin"]){
+                        if(member["role"]["admin"]){
                             isAdmin = true;
                             document.getElementById("delete-server-btn-container").style = "display: block";
 
@@ -90,10 +163,11 @@ let serverClickHandler = function(name, username, useremail){
                                 location.href = "#main_page"
                                 window.addEventListener("hashchange", handleHash);
                                 window.addEventListener("load", handleHash);
+                                
                             }
                         }
                         else{
-                            document.getElementById("delete-server-btn-container").style = "display: none";
+                            document.getElementById("leave-server-btn-container").style = "display: block";
                         }
                     }
                 });
@@ -106,9 +180,11 @@ let serverClickHandler = function(name, username, useremail){
                         document.getElementById("leave-server-btn-container").style = "display: block";
                         let serverNameRef = rtdb.child(serverRef, name);
                         let currMembers = server.val()["members"];
-                    
+
                         let currMemberObj = {
-                            "admin": false,
+                            "role": {
+                                "admin": false
+                            },
                             "userID": userUID,
                             "username": username,
                             "email": useremail
@@ -121,7 +197,7 @@ let serverClickHandler = function(name, username, useremail){
                         }
                     
                         rtdb.update(serverNameRef, membersObj);
-                        renderServerPage(name);
+                        renderServerPage(name, username, useremail, isAdmin);
 
                         document.getElementById("leave-server-btn").onclick = function(){
                             document.getElementById("join-server-btn-container").style = "display: block";
@@ -144,70 +220,57 @@ let serverClickHandler = function(name, username, useremail){
                             }
 
                             rtdb.update(serverNameRef, membersObj);
-                            renderServerPage(name);
+                            renderServerPage(name, username, useremail, isAdmin);
                         }
                     };
                     
                 }
-                else{
-                    if(!isAdmin){
-                        document.getElementById("leave-server-btn-container").style = "display: block";   
-                    }                
-                }
+                
+                renderServerPage(name, username, useremail, isAdmin);
             }
         });
     });
-    let servernameRef = rtdb.child(serverRef, name);
-    let messageRef = rtdb.child(servernameRef, "chats");
-    let messagegroupRef = rtdb.child(messageRef, "message");
+
     document.getElementById("send-btn").onclick = function(){
-        let servernameRef = rtdb.child(serverRef, name);
-        let messageRef = rtdb.child(servernameRef, "chats");
-        let messagegroupRef = rtdb.child(messageRef, "message");
-        let message1 = document.getElementById("message-field").value;
+        let message = document.getElementById("message-field").value;
         document.getElementById("message-field").value="";
         const currenttime = new Date();
-        
-        
-        
+
         let chatObj = { 
-            "message": message1,
+            "message": message,
             "timestamp": currenttime.toUTCString(),
             "username": username
         };
-       
-        
+             
         rtdb.push(messagegroupRef, chatObj);
-   
     }
                                 
                                
     
     rtdb.onValue(messagegroupRef ,ss => {
-  let allMessages = ss.val();
-  let listOfMessages = document.getElementById("PastMessages");
-  listOfMessages.innerHTML = ''; 
-  for (const message in allMessages) {
-    let displayuser = document.createElement('div');
-    displayuser.innerText = username + " " + allMessages[message].timestamp;
-    let displayedMessage = document.createElement('ul');
+        let allMessages = ss.val();
+        let listOfMessages = document.getElementById("PastMessages");
+        listOfMessages.innerHTML = ''; 
+        
+        for (const message in allMessages) {
+            let displayuser = document.createElement('div');
+            displayuser.innerText = username + " " + allMessages[message].timestamp;
+            let displayedMessage = document.createElement('ul');
 
-    if(allMessages[message].username == username){ 
-       let displayedMessage = document.createElement('ul');
-       displayedMessage.setAttribute("class", "personalmessage");
+            if(allMessages[message].username == username){ 
+                let displayedMessage = document.createElement('ul');
+                displayedMessage.setAttribute("class", "personalmessage");
        
-    }else{
-       let displayedMessage = document.createElement('ul');
-       displayedMessage.setAttribute("class", "personalmessage");
-    }
-    let userName = document.createElement('span');
-    listOfMessages.appendChild(displayuser);
-    listOfMessages.appendChild(displayedMessage);
-    displayedMessage.innerText = allMessages[message].message;
+            }else{
+                let displayedMessage = document.createElement('ul');
+                displayedMessage.setAttribute("class", "personalmessage");
+            }
 
-  }
-});
-    renderServerPage(name);
+            listOfMessages.appendChild(displayuser);
+            listOfMessages.appendChild(displayedMessage);
+            displayedMessage.innerText = allMessages[message].message;
+        }
+    });
 
     loginForm = false;
     signUpForm = false;
@@ -428,7 +491,9 @@ document.getElementById("create-server-btn").onclick = function(){
 
     let nameRef = rtdb.child(serverRef, serverName);
     let userObj = {
-        "admin": true,
+        "role": {
+            "admin": true
+        },
         "userID": userUID,
         "username": username,
         "email": userEmail
@@ -438,6 +503,9 @@ document.getElementById("create-server-btn").onclick = function(){
         "name": serverName,
         "chats": [],
         "members": [
+            userObj
+        ],
+        "admins": [
             userObj
         ],
         "createdBy" : userObj,

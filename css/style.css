@@ -28,13 +28,15 @@
   background-color: white;
   border: 15px solid aqua;
   border-radius:2px;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 .Messagebar{
-  position: static;
+  position: relative;
   padding: 30px;
   left: 200px;
-  width:800px;
+  width:1000px;
   height: 50rem;
 }
 .Messagesender{

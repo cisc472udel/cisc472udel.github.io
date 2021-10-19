@@ -282,6 +282,8 @@ body{
    height: 100%;
    padding: 20px 0;
    transition: all 0.5s ease;
+   overflow-x: auto;
+   overflow-y: auto;
 }
 .wrapper .sidebar h2{
  text-align: center;

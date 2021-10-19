@@ -3,7 +3,7 @@
  * Date: October 18th, 2021
  */
 
-import {auth, fbauth, serverRef, appusersRef, rtdb} from './firebase-connection.js';
+import {db, auth, fbauth, serverRef, appusersRef, rtdb} from './firebase-connection.js';
 
 let userName;
 let userEmail;
@@ -25,300 +25,278 @@ rtdb.get(appusersRef).then(ss=>{
 let kickMemberAction = function(serverName, username, useremail){
     // 1. Kick out the given user from given server
        // - Delete entry of that user from "members" list in database
-       rtdb.get(serverRef).then(ss=>{
-        ss.forEach(server=>{
-            if(server.val()["name"] == serverName){
+       let serverNameRef = rtdb.ref(db, "Servers/" + serverName);
+       let index = 0;
 
-                let serverNameRef = rtdb.child(serverRef, serverName);
-                let index = 0;
-                let currMembers = server.val()["members"];
-                currMembers.forEach(member=>{
-                    if(member["username"] == username && member["email"] == useremail){
-                        currMembers.splice(index, 1);
+       rtdb.get(serverNameRef).then(ss=>{
+
+           let currMembers = ss.val()["members"];
+           currMembers.forEach(member=>{
+               if(member["username"] == username && member["email"] == useremail){
+                   currMembers.splice(index, 1);
+               }
+               else{
+                   index = index + 1;
+               }
+            });
+            let membersObj = {
+                "members": currMembers
+            }
+            
+            rtdb.update(serverNameRef, membersObj);
+            index = 0;
+            let currAdmins = ss.val()["admins"];
+            currAdmins.forEach(admin=>{
+                if(admin["username"] == username && admin["email"] == useremail){
+                    currAdmins.splice(index, 1);
+                    let adminsObj = {
+                        "admins" : currAdmins
                     }
-                    else{
-                        index = index + 1;
-                    }
-                });
+                    rtdb.update(serverNameRef, adminsObj);
+                }
+                else{
+                    index = index + 1;
+                }
+            });
+       });
+};
+
+let banMemberAction = function(serverName, username, useremail){
+    let serverNameRef = rtdb.ref(db, "Servers/" + serverName);
+    let index = 0;
+
+    // Unlike "Kick Member", user in this case won't be able to join that server until unban by admin
+    rtdb.get(serverNameRef).then(ss=>{
+        ss.val()["members"].forEach(member=>{
+            if(member["username"] == username && member["email"] == useremail){
+                let currMembers = ss.val()["members"];
+                currMembers.splice(index, 1);
 
                 let membersObj = {
-                    "members": currMembers
+                    "members" : currMembers
                 }
-
+                
                 rtdb.update(serverNameRef, membersObj);
-
                 index = 0;
-                let currAdmins = server.val()["admins"];
+                let currAdmins = ss.val()["admins"];
                 currAdmins.forEach(admin=>{
                     if(admin["username"] == username && admin["email"] == useremail){
                         currAdmins.splice(index, 1);
                         let adminsObj = {
                             "admins" : currAdmins
                         }
-        
+                        
                         rtdb.update(serverNameRef, adminsObj);
                     }
+                    
                     else{
                         index = index + 1;
                     }
                 });
-            }
-        })
-    });   
-       
-    // 2. It would be still possible for that user to re-join the given server
-};
-
-let banMemberAction = function(serverName, username, useremail){
-    let serverNameRef = rtdb.child(serverRef, serverName);
-    let index = 0;
-
-    // Unlike "Kick Member", user in this case won't be able to join that server until unban by admin
-    rtdb.get(serverRef).then(ss=>{
-        ss.forEach(server=>{
-            if(server.val()["name"] == serverName){
-                server.val()["members"].forEach(member=>{
-                    if(member["username"] == username && member["email"] == useremail){
-                         let currMembers = server.val()["members"];
-                         currMembers.splice(index, 1);
-
-                         let membersObj = {
-                             "members" : currMembers
-                         }
-
-                         rtdb.update(serverNameRef, membersObj);
-                         
-                         index = 0;
-                         let currAdmins = server.val()["admins"];
-                         currAdmins.forEach(admin=>{
-                            if(admin["username"] == username && admin["email"] == useremail){
-                                currAdmins.splice(index, 1);
-                                let adminsObj = {
-                                    "admins" : currAdmins
-                                }
                 
-                                rtdb.update(serverNameRef, adminsObj);
-                            }
-                            else{
-                                index = index + 1;
-                            }
-                        });
-
-                        let userObj = {
-                            "userID": member["userID"],
-                            "username": username,
-                            "email": useremail
-                        };
-
-                        if(server.val()["name"]["bans"] == null){
-                            let bans = [];
-                            bans.push(userObj);
-
-                            let banUserObj = {
-                                "bans": bans
-                            };
-
-                            rtdb.update(serverNameRef, banUserObj);
-                        }
-                        else{
-                            bans = server.val()["name"]["bans"];
-                            bans.push(userObj);
-
-                            let banUserObj = {
-                                "bans": bans
-                            };
-
-                            rtdb.update(serverNameRef, banUserObj);
-                        }
-                    }
-                    else{
-                        index = index + 1;
-                    }
-                });
+                let userObj = {
+                    "userID": member["userID"],
+                    "username": username,
+                    "email": useremail
+                };
+                
+                if(ss.val()["name"]["bans"] == null){
+                    let bans = [];
+                    bans.push(userObj);
+                    
+                    let banUserObj = {
+                        "bans": bans
+                    };
+                    
+                    rtdb.update(serverNameRef, banUserObj);
+                }
+                
+                else{
+                    
+                    bans = ss.val()["name"]["bans"];
+                    bans.push(userObj);
+                    
+                    let banUserObj = {
+                        "bans": bans
+                    };
+                    
+                    rtdb.update(serverNameRef, banUserObj);
+                }
             }
-        })
-    })
+            
+            else{
+                index = index + 1;
+            }
+        });
+    });
 };
 
 let makeAdminAction = function(serverName, username, useremail){
     // 1. Set "admin" role to be true for the given user in database
-        let serverNameRef = rtdb.child(serverRef, serverName);
-        let index = 0;
-        rtdb.get(serverRef).then(ss=>{
-            ss.forEach(server=>{
-                if(server.val()["name"] == serverName){ 
-                    server.val()["members"].forEach(member=>{
-                        if(member["username"] == username && member["email"] == useremail){
-                        
-                           let memberRef = rtdb.child(serverNameRef, "members");
-                           let currMemberRef = rtdb.child(memberRef, String(index));
+    let serverNameRef = rtdb.ref(db, "Servers/" + serverName);
+    let index = 0;
+    
+    rtdb.get(serverNameRef).then(ss=>{
+        ss.val()["members"].forEach(member=>{
+            if(member["username"] == username && member["email"] == useremail){
+                
+                let memberRef = rtdb.child(serverNameRef, "members");
+                let currMemberRef = rtdb.child(memberRef, String(index));
                           
-                           let currMemberObj ={
-                                "role": {
-                                  "admin": true
-                                },
-                                "is_banned": false,
-                                "userID": member["userID"],
-                                "username": username,
-                                "email": useremail
-                               
-                           };
-                            
-                            rtdb.update(currMemberRef, currMemberObj);
-                            
-                            let currAdmins = server.val()["admins"];
-                            currAdmins.push(currMemberObj);
-                    
-                            let adminsObj = {
-                                "admins": currAdmins
-                            }
-                    
-                            rtdb.update(serverNameRef, adminsObj); 
-
-                        }else{
-                            index++;
-                        }
-                    });
+                let currMemberObj ={
+                    "role": {
+                        "admin": true
+                    },
+                    "userID": member["userID"],
+                    "username": username,
+                    "email": useremail
+                };
+                
+                rtdb.update(currMemberRef, currMemberObj);
+                
+                let currAdmins = ss.val()["admins"];
+                currAdmins.push(currMemberObj);
+                
+                let adminsObj = {
+                    "admins": currAdmins
                 }
-            });
+                
+                rtdb.update(serverNameRef, adminsObj); 
+
+            }else{
+                index++;
+            }
         });
-                              
+    });                            
 };
 
 let renderServerPage = function(serverName, username, useremail, isAdmin){
 
+    let serverNameRef = rtdb.ref(db, "Servers/" + serverName);
     let currentMemberUserName;
     let currentMemberEmail;
 
     // Color up the server page before routing there
-    rtdb.get(serverRef).then(ss=>{
-        ss.forEach(s=>{
-            if(s.val()["name"] == serverName){
-                let nameContainer = document.getElementById("nameOfServer");
-                nameContainer.innerHTML = "";
-
-                let name = document.createElement("div");
-                name.innerHTML = s.val()["name"];
-                name.style = "color: yellow; text-align: center";
-                nameContainer.appendChild(name);
-
-                let membersList = document.getElementById("membersList");
-                membersList.innerHTML = "";
-
-                s.val()["members"].forEach(member=>{
-                    let currMember = document.createElement("div");
-                    currMember.innerHTML = member["username"];
-
-                    if(member["username"] == username && member["email"] == useremail){
-                        currMember.style = "color: yellow; text-align: center";
-                    }
-                    else{
-                        if(isAdmin){
-                            currentMemberUserName = member["username"];
-                            currentMemberEmail = member["email"];
-                            
-                            currMember.style = "color: yellow; text-align: center; cursor: pointer";
-                            currMember.onclick = function(){
-                                document.getElementById("messagebar").style = "display: none";
-                                document.getElementById("user-settings").style = "display: block";
-
-                                if(member["role"]["admin"]){
-                                    document.getElementById("roles-container").innerHTML = "<br> Admin <br> Member";
-                                }
-                                else{
-                                    document.getElementById("roles-container").innerHTML = "<br> Member";
-                                }
-
-                                document.getElementById("roles-tab").onclick = function() {
-                                    document.getElementById("roles-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
-                                    document.getElementById("permissions-tab").style = "color: grey; text-decoration: none; cursor: pointer";
-                                    if(member["role"]["admin"]){
-                                        document.getElementById("roles-container").innerHTML = "<br> Admin <br> Member";
-                                    }
-                                    else{
-                                        document.getElementById("roles-container").innerHTML = "<br> Member";
-                                    }
-    
-                                    document.getElementById("roles-container").style = "display: block";
-                                    document.getElementById("permissions-container").style = "display: none";
-                                };
-                                
-                                document.getElementById("permissions-tab").onclick = function() {
-                                    document.getElementById("permissions-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
-                                    document.getElementById("roles-tab").style = "color: grey; text-decoration: none; cursor: pointer";
-                                    document.getElementById("roles-container").style = "display: none";
-                                    document.getElementById("permissions-container").style = "display: block";
-                                };
-                                
-                            
-                                document.getElementById("submit-changes-btn").onclick = function(){                         
-                                    /* 1.
-                                        Check from HTML forms what actions admin has taken for a particular user
-                                        Change the value of above boolean variables as needed
-                                    */
-
-                                    if(document.getElementById("kickUserRadio").checked){
-                                        kickMemberAction(serverName, currentMemberUserName, currentMemberEmail);
-                                    }
-
-                                    else if(document.getElementById("banUserRadio").checked){
-                                        banMemberAction(serverName, currentMemberUserName, currentMemberEmail);
-                                    }
-                                    
-                                    else if(document.getElementById("makeAdminRadio").checked){
-                                        makeAdminAction(serverName, currentMemberUserName, currentMemberEmail);    
-                                    }
-                               
-                                    // 2. Close the "User Settings" Form
-                                    document.getElementById("user-settings").style.display = "none";
-                                    document.getElementById("kickUserRadio").checked = false;
-                                    document.getElementById("banUserRadio").checked = false;
-                                    document.getElementById("makeAdminRadio").checked = false;
-                                    document.getElementById("messagebar").style = "display: block";
-                                    document.getElementById("roles-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
-                                    document.getElementById("permissions-tab").style = "color: grey; text-decoration: none; cursor: pointer";
-                                    document.getElementById("roles-container").style = "display: block";
-                                    document.getElementById("permissions-container").style = "display: none";
-                                
-                                }
-                              
-                                
-                                document.getElementById("close-btn").onclick = function(){
-                                    document.getElementById("user-settings").style.display = "none";
-                                    document.getElementById("messagebar").style = "display: block";
-                                    document.getElementById("roles-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
-                                    document.getElementById("permissions-tab").style = "color: grey; text-decoration: none; cursor: pointer";
-                                    document.getElementById("roles-container").style = "display: block";
-                                    document.getElementById("permissions-container").style = "display: none";
-                                }
-                                
-                            }
-                        }
-                        else{
-                            currMember.style = "color: yellow; text-align: center";
-                        }
-                    }
-                    membersList.appendChild(currMember);
-                });
-
-                let adminContainer = document.getElementById("adminName");
-                adminContainer.innerHTML = "";
-
-                s.val()["admins"].forEach(admin=>{
-                    let adminName = document.createElement("div");
-                    adminName.innerHTML = admin["username"];
-                    adminName.style = "color: yellow; text-align: center";
-                    adminContainer.appendChild(adminName);
-                });
+    rtdb.get(serverNameRef).then(ss=>{
+        let nameContainer = document.getElementById("nameOfServer");
+        nameContainer.innerHTML = "";
+        
+        let name = document.createElement("div");
+        name.innerHTML = ss.val()["name"];
+        name.style = "color: yellow; text-align: center";
+        nameContainer.appendChild(name);
+        
+        let membersList = document.getElementById("membersList");
+        membersList.innerHTML = "";
+        
+        ss.val()["members"].forEach(member=>{
+            let currMember = document.createElement("div");
+            currMember.innerHTML = member["username"];
+            
+            if(member["username"] == username && member["email"] == useremail){
+                currMember.style = "color: yellow; text-align: center";
             }
-        })
+            else{
+                if(isAdmin){
+                    currentMemberUserName = member["username"];
+                    currentMemberEmail = member["email"];
+                            
+                    currMember.style = "color: yellow; text-align: center; cursor: pointer";
+                    currMember.onclick = function(){
+                        document.getElementById("messagebar").style = "display: none";
+                        document.getElementById("user-settings").style = "display: block";
+                    
+                        if(member["role"]["admin"]){
+                            document.getElementById("roles-container").innerHTML = "<br> Admin <br> Member";
+                        }
+                    
+                        else{
+                            document.getElementById("roles-container").innerHTML = "<br> Member";
+                        }
+
+                        document.getElementById("roles-tab").onclick = function() {
+                            document.getElementById("roles-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
+                            document.getElementById("permissions-tab").style = "color: grey; text-decoration: none; cursor: pointer";
+                            if(member["role"]["admin"]){
+                                document.getElementById("roles-container").innerHTML = "<br> Admin <br> Member";
+                            }
+                            
+                            else{
+                                document.getElementById("roles-container").innerHTML = "<br> Member";
+                            }
+                            
+                            document.getElementById("roles-container").style = "display: block";
+                            document.getElementById("permissions-container").style = "display: none";
+                        };
+                
+                        document.getElementById("permissions-tab").onclick = function() {
+                            document.getElementById("permissions-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
+                            document.getElementById("roles-tab").style = "color: grey; text-decoration: none; cursor: pointer";
+                            document.getElementById("roles-container").style = "display: none";
+                            document.getElementById("permissions-container").style = "display: block";
+                        };
+            
+                        document.getElementById("submit-changes-btn").onclick = function(){
+                            /* 1.
+                                Check from HTML forms what actions admin has taken for a particular user
+                                Change the value of above boolean variables as needed
+                            */
+                            if(document.getElementById("kickUserRadio").checked){
+                                kickMemberAction(serverName, currentMemberUserName, currentMemberEmail);
+                            }
+                            
+                            else if(document.getElementById("banUserRadio").checked){
+                                banMemberAction(serverName, currentMemberUserName, currentMemberEmail);
+                            }
+                            
+                            else if(document.getElementById("makeAdminRadio").checked){
+                                makeAdminAction(serverName, currentMemberUserName, currentMemberEmail);    
+                            }
+                            // 2. Close the "User Settings" Form
+                            document.getElementById("user-settings").style.display = "none";
+                            document.getElementById("kickUserRadio").checked = false;
+                            document.getElementById("banUserRadio").checked = false;
+                            document.getElementById("makeAdminRadio").checked = false;
+                            document.getElementById("messagebar").style = "display: block";
+                            document.getElementById("roles-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
+                            document.getElementById("permissions-tab").style = "color: grey; text-decoration: none; cursor: pointer";
+                            document.getElementById("roles-container").style = "display: block";
+                            document.getElementById("permissions-container").style = "display: none";
+                        }
+            
+                        document.getElementById("close-btn").onclick = function(){
+                            document.getElementById("user-settings").style.display = "none";
+                            document.getElementById("messagebar").style = "display: block";
+                            document.getElementById("roles-tab").style = "color: grey; text-decoration: underline; cursor: pointer";
+                            document.getElementById("permissions-tab").style = "color: grey; text-decoration: none; cursor: pointer";
+                            document.getElementById("roles-container").style = "display: block";
+                            document.getElementById("permissions-container").style = "display: none";
+                        }
+                    }
+                }
+                else{
+                    currMember.style = "color: yellow; text-align: center";
+                }
+            }
+            membersList.appendChild(currMember);
+        });
+        
+        let adminContainer = document.getElementById("adminName");
+        adminContainer.innerHTML = "";
+
+        ss.val()["admins"].forEach(admin=>{
+            let adminName = document.createElement("div");
+            adminName.innerHTML = admin["username"];
+            adminName.style = "color: yellow; text-align: center";
+            adminContainer.appendChild(adminName);
+        });
     });
-}
+};
 
 let serverClickHandler = function(name, username, useremail){
+    let serverNameRef = rtdb.ref(db, "Servers/" + name);
     let serverList = document.getElementById("serverlist");
-    let servernameRef = rtdb.child(serverRef, name);
-    let messageRef = rtdb.child(servernameRef, "chats");
+    let messageRef = rtdb.child(serverNameRef, "chats");
     let messagegroupRef = rtdb.child(messageRef, "message");
     let userExists = false;
     let isAdmin = false;
@@ -326,139 +304,134 @@ let serverClickHandler = function(name, username, useremail){
 
     // Display "Delete Server" button if the user who clicked the server link is an admin
     // Also, add the user to "members" list of the given server, upon clicking "Join Server" button, if he/she is not already there
-    rtdb.get(serverRef).then(ss=>{
-        ss.forEach(server=>{
-            if(server.val()["name"] == name){
-                server.val()["members"].forEach(member=>{
-                    if(member["username"] == username && member["email"] == useremail){
-                        userExists = true;
-                        if(member["role"]["admin"]){
-                            isAdmin = true;
-                            document.getElementById("delete-server-btn-container").style = "display: block";
-                            document.getElementById("membersList").style = "display: block";
-                            document.getElementById("adminName").style = "display: block";
-                            document.getElementById("messagebar").style = "display: block";
+    rtdb.get(serverNameRef).then(ss=>{
+        ss.val()["members"].forEach(member=>{
+            if(member["username"] == username && member["email"] == useremail){
+                userExists = true;
+                if(member["role"]["admin"]){
+                    isAdmin = true;
+                    document.getElementById("join-server-btn-container").style = "display: none";
+                    document.getElementById("leave-server-btn-container").style = "display: none";
+                    document.getElementById("delete-server-btn-container").style = "display: block";
+                    document.getElementById("membersList").style = "display: block";
+                    document.getElementById("adminName").style = "display: block";
+                    document.getElementById("messagebar").style = "display: block";
 
-                            document.getElementById("delete-server-btn").onclick = function(){
-                                let serverNameRef = rtdb.child(serverRef, name);
-                                rtdb.set(serverNameRef, null);
+                    document.getElementById("delete-server-btn").onclick = function(){
+                        rtdb.set(serverNameRef, null);
 
-                                loginForm = false;
-                                signUpForm = false;
-                                passwordResetPage = false;
-                                mainPage = true;
-                                serverPage = false;
+                        loginForm = false;
+                        signUpForm = false;
+                        passwordResetPage = false;
+                        mainPage = true;
+                        serverPage = false;
                             
-                                document.getElementById("nameOfServer").innerHTML = "";
-                                document.getElementById("membersList").innerHTML = "";
-                                document.getElementById("adminName").innerHTML = "";
-                                document.getElementById("leave-server-btn-container").style = "display: none";
-                                document.getElementById("join-server-btn-container").style = "display: none";
-                                document.getElementById("delete-server-btn-container").style = "display: none";
+                        document.getElementById("nameOfServer").innerHTML = "";
+                        document.getElementById("membersList").innerHTML = "";
+                        document.getElementById("adminName").innerHTML = "";
+                        document.getElementById("leave-server-btn-container").style = "display: none";
+                        document.getElementById("join-server-btn-container").style = "display: none";
+                        document.getElementById("delete-server-btn-container").style = "display: none";
                             
-                                location.href = "#main_page"
-                                window.addEventListener("hashchange", handleHash);
-                                window.addEventListener("load", handleHash);
+                        location.href = "#main_page"
+                        window.addEventListener("hashchange", handleHash);
+                        window.addEventListener("load", handleHash);
                                 
-                            }
-                        }
-                        else{
-                            document.getElementById("leave-server-btn-container").style = "display: block";
-                            document.getElementById("messagebar").style = "display: block";
-                            document.getElementById("membersList").style = "display: block";
-                            document.getElementById("adminName").style = "display: block";
-                        }
                     }
-                });
-
-                if(!userExists){
-                    if(server.val()["bans"] != null){
-                        server.val()["bans"].forEach(bannedUser=>{
-                            if(bannedUser["username"] == username && bannedUser["email"] == useremail){
-                                isBanned = true;
-                            }
-                        });
-                    }
-
-                    if(!isBanned){
-                        document.getElementById("join-server-btn-container").style = "display: block";
-                        document.getElementById("membersList").style = "display: block";
-                        document.getElementById("adminName").style = "display: block";
-                    }
-                    else{
-                        document.getElementById("join-server-btn-container").style = "display: none";
-                        document.getElementById("membersList").style = "display: none";
-                        document.getElementById("adminName").style = "display: none";
-                    }
-                    document.getElementById("messagebar").style = "display: none";
-
-                    document.getElementById("join-server-btn").onclick = function(){
-                        document.getElementById("join-server-btn-container").style = "display: none";
-                        document.getElementById("leave-server-btn-container").style = "display: block";
-                        document.getElementById("messagebar").style = "display: block";
-
-                        let serverNameRef = rtdb.child(serverRef, name);
-                        let currMembers = server.val()["members"];
-
-                        let currMemberObj = {
-                            "role": {
-                                "admin": false
-                            },
-                            "userID": userUID,
-                            "username": username,
-                            "email": useremail
-                        }
-                    
-                        currMembers.push(currMemberObj);
-                    
-                        let membersObj = {
-                            "members": currMembers
-                        }
-                    
-                        rtdb.update(serverNameRef, membersObj);
-                        renderServerPage(name, username, useremail, isAdmin);
-
-                        document.getElementById("leave-server-btn").onclick = function(){
-                            document.getElementById("join-server-btn-container").style = "display: block";
-                            document.getElementById("leave-server-btn-container").style = "display: none";
-                            document.getElementById("messagebar").style = "display: none";
-                            let index = 0;
-                            let serverNameRef = rtdb.child(serverRef, name);
-                            let currMembers = server.val()["members"];
-
-                            currMembers.forEach(member=>{
-                                if(member["username"] == username && member["email"] == useremail){
-                                    currMembers.splice(index, 1);
-                                }
-                                else{
-                                    index = index + 1;
-                                }
-                            });
-
-                            let membersObj = {
-                                "members": currMembers
-                            }
-
-                            rtdb.update(serverNameRef, membersObj);
-
-                            loginForm = false;
-                            signUpForm = false;
-                            passwordResetPage = false;
-                            mainPage = true;
-                            serverPage = false;
-
-                            location.href = "#main_page"
-                            window.addEventListener("hashchange", handleHash);
-                            window.addEventListener("load", handleHash);
-                            
-                        }
-                    };
-                    
                 }
-                
-                renderServerPage(name, username, useremail, isAdmin);
+                else{
+                    document.getElementById("leave-server-btn-container").style = "display: block";
+                    document.getElementById("messagebar").style = "display: block";
+                    document.getElementById("membersList").style = "display: block";
+                    document.getElementById("adminName").style = "display: block";
+                }
             }
         });
+        if(!userExists){
+            if(ss.val()["bans"] != null){
+                ss.val()["bans"].forEach(bannedUser=>{
+                    if(bannedUser["username"] == username && bannedUser["email"] == useremail){
+                        isBanned = true;
+                    }
+                });
+            }
+
+            if(!isBanned){
+                document.getElementById("join-server-btn-container").style = "display: block";
+                document.getElementById("membersList").style = "display: block";
+                document.getElementById("adminName").style = "display: block";
+            }
+            
+            else{
+                document.getElementById("join-server-btn-container").style = "display: none";
+                document.getElementById("membersList").style = "display: none";
+                document.getElementById("adminName").style = "display: none";
+            }
+            
+            document.getElementById("messagebar").style = "display: none";
+
+            document.getElementById("join-server-btn").onclick = function(){
+                document.getElementById("join-server-btn-container").style = "display: none";
+                document.getElementById("leave-server-btn-container").style = "display: block";
+                document.getElementById("messagebar").style = "display: block";
+                
+                let currMembers = ss.val()["members"];
+                let currMemberObj = {
+                    "role": {
+                        "admin": false
+                    },
+                    "userID": userUID,
+                    "username": username,
+                    "email": useremail
+                }
+                
+                currMembers.push(currMemberObj);
+                
+                let membersObj = {
+                    "members": currMembers
+                }
+                
+                rtdb.update(serverNameRef, membersObj);
+                renderServerPage(name, username, useremail, isAdmin);
+                
+                document.getElementById("leave-server-btn").onclick = function(){
+                    document.getElementById("join-server-btn-container").style = "display: block";
+                    document.getElementById("leave-server-btn-container").style = "display: none";
+                    document.getElementById("messagebar").style = "display: none";
+                            
+                    let index = 0;
+                    let currMembers = ss.val()["members"];
+                    
+                    currMembers.forEach(member=>{
+                        if(member["username"] == username && member["email"] == useremail){
+                            currMembers.splice(index, 1);
+                        }
+                        else{
+                            index = index + 1;
+                        }
+                    });
+                    
+                    let membersObj = {
+                        "members": currMembers
+                    }
+                    
+                    rtdb.update(serverNameRef, membersObj);
+
+                    loginForm = false;
+                    signUpForm = false;
+                    passwordResetPage = false;
+                    mainPage = true;
+                    serverPage = false;
+
+                    location.href = "#main_page"
+                    window.addEventListener("hashchange", handleHash);
+                    window.addEventListener("load", handleHash);
+                }
+            };
+                    
+        }
+        
+        renderServerPage(name, username, useremail, isAdmin);
     });
 
     document.getElementById("send-btn").onclick = function(){

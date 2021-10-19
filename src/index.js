@@ -713,42 +713,50 @@ document.getElementById("create-server-btn").onclick = function(){
     let serverList = document.getElementById("serverlist");
     let server = document.createElement("div");
     let serverName = String(document.getElementById("server-name").value);
+    serverName = serverName.trim();
 
-    server.innerHTML = serverName;
-    server.style = "color: yellow; text-align: center; cursor: pointer";
-    server.id = serverName;
-    server.onclick = function(){
-        serverClickHandler(server.id, userName, userEmail);
+    if(serverName.length > 0){
+        server.innerHTML = serverName;
+        server.style = "color: yellow; text-align: center; cursor: pointer";
+        server.id = serverName;
+        server.onclick = function(){
+            serverClickHandler(server.id, userName, userEmail);
+        }
+        serverList.appendChild(server);
+    
+        document.getElementById("create-server").style.display = "none";
+        document.getElementById("server-name").value = "";
+    
+        let nameRef = rtdb.child(serverRef, serverName);
+        let userObj = {
+            "role": {
+                "admin": true
+            },
+            "userID": userUID,
+            "username": userName,
+            "email": userEmail
+        }
+    
+        let serverObj = {
+            "name": serverName,
+            "chats": [],
+            "members": [
+                userObj
+            ],
+            "admins": [
+                userObj
+            ],
+            "createdBy" : userObj,
+            "serverID" : userObj.userID
+        };
+    
+        rtdb.update(nameRef, serverObj);
     }
-    serverList.appendChild(server);
-
-    document.getElementById("create-server").style.display = "none";
-    document.getElementById("server-name").value = "";
-
-    let nameRef = rtdb.child(serverRef, serverName);
-    let userObj = {
-        "role": {
-            "admin": true
-        },
-        "userID": userUID,
-        "username": userName,
-        "email": userEmail
+    else{
+        document.getElementById("create-server").style.display = "none";
+        document.getElementById("server-name").value = "";
+    
     }
-
-    let serverObj = {
-        "name": serverName,
-        "chats": [],
-        "members": [
-            userObj
-        ],
-        "admins": [
-            userObj
-        ],
-        "createdBy" : userObj,
-        "serverID" : userObj.userID
-    };
-
-    rtdb.update(nameRef, serverObj);
 }
 
 document.getElementById("back-btn").onclick = function(){
